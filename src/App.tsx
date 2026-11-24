@@ -8,7 +8,7 @@ import { MilestoneToast, type Milestone } from './components/MilestoneToast';
 import { isMilestone, pipGrowth } from './mascot/mood';
 import { currentStreak } from './lib/streaks';
 import { successHaptic } from './lib/haptics';
-import { useReminderSync, useThemeSync } from './lib/useSystemSync';
+import { useThemeSync } from './lib/useSystemSync';
 import { TodayScreen } from './screens/TodayScreen';
 import { CalendarScreen } from './screens/CalendarScreen';
 import { StatsScreen } from './screens/StatsScreen';
@@ -31,7 +31,6 @@ function Shell() {
   const hour = useHour();
   const [calHabit, setCalHabit] = useState('all');
   useThemeSync(state.settings.theme);
-  useReminderSync(state, today, ready);
 
   // Android back button: close sheets first, then return to Today, then leave the app.
   const tabRef = useRef(tab);

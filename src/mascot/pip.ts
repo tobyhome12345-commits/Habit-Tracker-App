@@ -8,7 +8,7 @@
  *
  * Modern flat-soft style: no outlines, gentle gradients, glossy capsule eyes.
  * Drawn as plain SVG markup (no React) so the same artwork powers the in-app
- * component, the app icon, the splash screen and notification images.
+ * component, the app icon and the splash screen.
  * Only erasable TypeScript syntax here: Node can run this file directly.
  */
 
@@ -253,7 +253,7 @@ export function pipSvg(opts: PipOptions = {}): string {
 
 /**
  * One-colour Pip with the eyes and mouth cut out (transparent), for Android's
- * monochrome themed icon and the status-bar notification icon.
+ * monochrome themed icon.
  */
 export function pipKnockoutSvg(mood: PipMood = 'happy', stage: PipStage = 0, size = 200, color = '#ffffff'): string {
   const white: Paint = { flat: '#fff', id: 'k' };

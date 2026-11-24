@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dayContext, isMilestone, pipGrowth, pipMessage, pipMood, pipReminder } from '../../mascot/mood';
+import { dayContext, isMilestone, pipGrowth, pipMessage, pipMood } from '../../mascot/mood';
 import { growthStage } from '../../mascot/pip';
 import { defaultState } from '../storage';
 import type { AppState } from '../types';
@@ -10,7 +10,7 @@ const ctx = (done: number, total: number, hour = 10, lostStreak = false) => ({ d
 function stateWith(days: Record<string, string[]>): AppState {
   const s = defaultState();
   for (const [id, list] of Object.entries(days)) {
-    s.habits.push({ id, name: id, emoji: '⭐', color: '#3dbe7e', createdAt: '2026-01-01', reminder: { enabled: false, time: '20:00' } });
+    s.habits.push({ id, name: id, emoji: '⭐', color: '#3dbe7e', createdAt: '2026-01-01' });
     s.completions[id] = Object.fromEntries(list.map((d) => [d, true as const]));
   }
   return s;
@@ -58,14 +58,5 @@ describe('growth & milestones', () => {
   });
   it('knows milestone days', () => {
     expect([3, 7, 8, 30, 100, 101].map(isMilestone)).toEqual([true, true, false, true, true, false]);
-  });
-});
-
-describe('pipReminder', () => {
-  it('is sleepy late, streak-aware otherwise', () => {
-    expect(pipReminder(22, 9, 1).largeIcon).toBe('pip_sleepy');
-    expect(pipReminder(18, 9, 1)).toEqual({ body: 'Pip here! Keep your 9-day streak going 🔥', largeIcon: 'pip_encourage' });
-    expect(pipReminder(8, 0, 1).largeIcon).toBe('pip_happy');
-    expect(pipReminder(15, 0, 1).largeIcon).toBe('pip_encourage');
   });
 });

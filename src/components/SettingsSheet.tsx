@@ -1,21 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
-import { Bell, BellOff, Clock, Download, Trash2, Upload, X } from 'lucide-react';
+import { Download, Trash2, Upload, X } from 'lucide-react';
 import { Pip } from './Pip';
 import { Sheet } from './Sheet';
 import { useStore } from '../lib/store';
 import { defaultState } from '../lib/storage';
 import { exportBackup, parseBackup } from '../lib/backup';
-import {
-  exactAlarmsAllowed,
-  notificationPermission,
-  openExactAlarmSettings,
-  requestNotificationPermission,
-  syncReminders,
-  type PermissionState,
-} from '../lib/reminders';
-import { todayKey } from '../lib/dates';
 import type { AppState, ThemePref } from '../lib/types';
 
 type Msg = { kind: 'ok' | 'error'; text: string } | null;
@@ -23,29 +14,15 @@ type Msg = { kind: 'ok' | 'error'; text: string } | null;
 export function SettingsSheet({ onClose }: { onClose: () => void }) {
   const { state, dispatch } = useStore();
   const { settings } = state;
-  const [perm, setPerm] = useState<PermissionState>('unsupported');
-  const [exact, setExact] = useState(true);
   const [version, setVersion] = useState('web preview');
   const [pendingImport, setPendingImport] = useState<AppState | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
   const [msg, setMsg] = useState<Msg>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const refreshPerms = () => {
-    notificationPermission().then(setPerm);
-    exactAlarmsAllowed().then(setExact);
-  };
-
   useEffect(() => {
-    refreshPerms();
     if (Capacitor.isNativePlatform()) CapApp.getInfo().then((i) => setVersion(`v${i.version}`));
-    // Coming back from Android settings → re-check.
-    const onVis = () => document.visibilityState === 'visible' && refreshPerms();
-    document.addEventListener('visibilitychange', onVis);
-    return () => document.removeEventListener('visibilitychange', onVis);
   }, []);
-
-  const reminderCount = state.habits.filter((h) => h.reminder.enabled).length;
 
   const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -100,49 +77,6 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
                 </button>
               ))}
             </div>
-
-            <p className="section-title">Reminders</p>
-            <div className="settings-group">
-              <div className="setting-row">
-                <span className="setting-icon">{perm === 'denied' ? <BellOff size={20} /> : <Bell size={20} />}</span>
-                <div className="setting-text">
-                  <span className="setting-title">Notifications</span>
-                  <span className="setting-sub">
-                    {perm === 'unsupported'
-                      ? 'Reminders work in the Android app 📱'
-                      : perm === 'granted'
-                        ? `Allowed · ${reminderCount} habit${reminderCount === 1 ? '' : 's'} with reminders`
-                        : perm === 'denied'
-                          ? 'Blocked — allow in Android Settings › Apps › Habit Tracker'
-                          : 'Not allowed yet'}
-                  </span>
-                </div>
-                {perm === 'prompt' && (
-                  <button
-                    className="btn btn-soft small"
-                    onClick={async () => {
-                      const p = await requestNotificationPermission();
-                      setPerm(p);
-                      if (p === 'granted') syncReminders(state, todayKey()).catch(() => {});
-                    }}
-                  >
-                    Allow
-                  </button>
-                )}
-              </div>
-              {perm === 'granted' && !exact && (
-                <button className="setting-row" onClick={() => openExactAlarmSettings().then(refreshPerms)}>
-                  <span className="setting-icon">
-                    <Clock size={20} />
-                  </span>
-                  <span className="setting-text">
-                    <span className="setting-title">On-time reminders</span>
-                    <span className="setting-sub">Android may delay reminders a little. Tap to allow exact timing.</span>
-                  </span>
-                </button>
-              )}
-            </div>
-            <p className="settings-note">Set a reminder time for each habit by tapping it on the Today screen.</p>
 
             <p className="section-title">Your data</p>
             <p className="settings-note top">

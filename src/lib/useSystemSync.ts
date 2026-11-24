@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Capacitor, SystemBars, SystemBarsStyle } from '@capacitor/core';
-import { syncReminders } from './reminders';
-import type { AppState, DateKey, ThemePref } from './types';
+import type { ThemePref } from './types';
 
 /** Applies the theme to <html> and the Android status/navigation bar icons. */
 export function useThemeSync(theme: ThemePref) {
@@ -23,23 +22,4 @@ export function useThemeSync(theme: ThemePref) {
       SystemBars.setStyle({ style: dark ? SystemBarsStyle.Dark : SystemBarsStyle.Light }).catch(() => {});
     }
   }, [theme, dark]);
-}
-
-/** Re-plans reminders (debounced) whenever anything that affects them changes. */
-export function useReminderSync(state: AppState, today: DateKey, ready: boolean) {
-  const signature =
-    today +
-    '|' +
-    state.habits
-      .map((h) => [h.id, h.name, h.emoji, h.color, h.reminder.enabled, h.reminder.time, state.completions[h.id]?.[today] ? 1 : 0].join(','))
-      .join('|');
-  const latest = useRef(state);
-  latest.current = state;
-  useEffect(() => {
-    if (!ready) return;
-    const t = setTimeout(() => {
-      syncReminders(latest.current, today).catch((e) => console.error('Reminder sync failed', e));
-    }, 800);
-    return () => clearTimeout(t);
-  }, [signature, today, ready]);
 }

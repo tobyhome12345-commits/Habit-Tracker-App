@@ -5,15 +5,13 @@
  *
  * - assets/*.png                → fed to @capacitor/assets (launcher icons + splash screens)
  * - mipmap-* monochrome layer   → Android 13+ themed icons
- * - drawable-*dpi/ic_stat_notify.png → status-bar notification icon (white Pip silhouette)
- * - drawable-nodpi/pip_*.png    → colour Pip shown inside reminder notifications
  * - public/icon.svg             → browser favicon
  */
 import { execSync } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import sharp from 'sharp';
-import { pipKnockoutSvg, pipSvg, type PipMood } from '../src/mascot/pip.ts';
+import { pipKnockoutSvg, pipSvg } from '../src/mascot/pip.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const RES = join(ROOT, 'android/app/src/main/res');
@@ -100,30 +98,6 @@ async function main() {
     }
   }
   console.log('  added monochrome (themed) icon layer');
-
-  // ---- Status-bar notification icon: white Pip silhouette with the face cut out.
-  rmSync(join(RES, 'drawable/ic_stat_notify.xml'), { force: true });
-  const notif = pipKnockoutSvg('happy', 1, 200, '#ffffff');
-  for (const [dpi, px] of [['mdpi', 24], ['hdpi', 36], ['xhdpi', 48], ['xxhdpi', 72], ['xxxhdpi', 96]] as const) {
-    const dir = join(RES, `drawable-${dpi}`);
-    mkdirSync(dir, { recursive: true });
-    await png(notif, join(dir, 'ic_stat_notify.png'), px);
-  }
-
-  // ---- Colour Pip pictures shown inside reminder notifications (largeIcon).
-  const nodpi = join(RES, 'drawable-nodpi');
-  mkdirSync(nodpi, { recursive: true });
-  const moods: PipMood[] = ['happy', 'encourage', 'sleepy', 'celebrate'];
-  for (const mood of moods) {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect width="256" height="256" fill="#fff1c9"/>${glow(128, 120, 150, '#ffffff', 0.7)}${placePip(
-      // Zoomed in so the sapling fills the notification picture
-      pipSvg({ mood, stage: 2, id: `n-${mood}`, shadow: false }),
-      -37,
-      -86,
-      330,
-    )}</svg>`;
-    await png(svg, join(nodpi, `pip_${mood}.png`), 256);
-  }
 
   // ---- Favicon
   writeFileSync(

@@ -6,7 +6,7 @@ describe('reducer', () => {
   it('adds, toggles, edits and deletes habits', () => {
     let s = reducer(defaultState(), {
       type: 'addHabit',
-      habit: { name: 'Read', emoji: '📚', color: '#f59e0b', reminder: { enabled: false, time: '20:00' } },
+      habit: { name: 'Read', emoji: '📚', color: '#f59e0b' },
     });
     const id = s.habits[0].id;
     s = reducer(s, { type: 'toggle', id, date: '2026-11-24' });

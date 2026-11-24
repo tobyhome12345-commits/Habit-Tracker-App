@@ -27,10 +27,6 @@ export function normalizeState(raw: unknown): AppState {
     emoji: String(h.emoji ?? '⭐'),
     color: migrateColor(h.color),
     createdAt: /^\d{4}-\d{2}-\d{2}$/.test(String(h.createdAt)) ? String(h.createdAt) : todayKey(),
-    reminder: {
-      enabled: isObj(h.reminder) ? !!h.reminder.enabled : false,
-      time: isObj(h.reminder) && /^\d{2}:\d{2}$/.test(String(h.reminder.time)) ? String(h.reminder.time) : '20:00',
-    },
   }));
   const completions: AppState['completions'] = {};
   if (isObj(raw.completions)) {

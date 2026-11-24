@@ -8,7 +8,6 @@ const habit = (id: string, createdAt: string): Habit => ({
   emoji: '⭐',
   color: '#8b5cf6',
   createdAt,
-  reminder: { enabled: false, time: '20:00' },
 });
 
 describe('stats', () => {

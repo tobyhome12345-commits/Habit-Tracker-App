@@ -103,32 +103,3 @@ export const MILESTONES = [3, 7, 14, 21, 30, 50, 75, 100, 150, 200, 365];
 export function isMilestone(streak: number): boolean {
   return MILESTONES.includes(streak);
 }
-
-export interface ReminderContent {
-  body: string;
-  /** Android drawable name of the colour Pip picture (res/drawable-nodpi). */
-  largeIcon: 'pip_happy' | 'pip_encourage' | 'pip_sleepy';
-}
-
-/** What Pip says in a reminder notification, based on the time it fires and the streak at stake. */
-export function pipReminder(hour: number, streak: number, seed: number): ReminderContent {
-  if (hour >= 21 || hour < 5) {
-    return {
-      body: pick(['Yawn… a quick one before bed? 😴', 'Pip’s getting sleepy. One more win today? 🌙', 'Nearly bedtime! Tiny habit, big dreams 💤'], String(seed)),
-      largeIcon: 'pip_sleepy',
-    };
-  }
-  if (streak > 1) {
-    return { body: `Pip here! Keep your ${streak}-day streak going 🔥`, largeIcon: 'pip_encourage' };
-  }
-  if (hour < 12) {
-    return {
-      body: pick(['Pip here! Tiny step, big win 🌱', 'Morning! Let’s grow something today ☀️', 'Rise and shine, it’s habit time 🌼'], String(seed)),
-      largeIcon: 'pip_happy',
-    };
-  }
-  return {
-    body: pick(['Pip here! Future you says thanks 🙌', 'Quick one? Pip believes in you 💪', 'Small habits, big results. Let’s go ✨'], String(seed)),
-    largeIcon: 'pip_encourage',
-  };
-}

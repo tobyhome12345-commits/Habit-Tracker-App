@@ -1,19 +1,12 @@
 /** A local calendar day formatted as 'YYYY-MM-DD'. */
 export type DateKey = string;
 
-export interface Reminder {
-  enabled: boolean;
-  /** 24h time, 'HH:MM' */
-  time: string;
-}
-
 export interface Habit {
   id: string;
   name: string;
   emoji: string;
   color: string;
   createdAt: DateKey;
-  reminder: Reminder;
 }
 
 export type ThemePref = 'system' | 'light' | 'dark';

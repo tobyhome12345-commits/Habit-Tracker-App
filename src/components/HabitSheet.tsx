@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { Bell, Check, Trash2, X } from 'lucide-react';
+import { Check, Trash2, X } from 'lucide-react';
 import { Sheet } from './Sheet';
 import { DEFAULT_HABIT_COLOR, HABIT_COLORS, alpha, onColor } from '../lib/colors';
 import { EMOJIS, QUICK_PICKS, firstGrapheme } from '../lib/emojis';
 import { useStore } from '../lib/store';
-import { remindersSupported, requestNotificationPermission } from '../lib/reminders';
 import type { Habit } from '../lib/types';
 
 interface Props {
@@ -17,26 +16,8 @@ export function HabitSheet({ habit, onClose }: Props) {
   const [name, setName] = useState(habit?.name ?? '');
   const [emoji, setEmoji] = useState(habit?.emoji ?? '💧');
   const [color, setColor] = useState(habit?.color ?? DEFAULT_HABIT_COLOR);
-  const [reminderOn, setReminderOn] = useState(habit?.reminder.enabled ?? false);
-  const [time, setTime] = useState(habit?.reminder.time ?? '20:00');
   const [customEmoji, setCustomEmoji] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [reminderNote, setReminderNote] = useState('');
-
-  const toggleReminder = async () => {
-    if (reminderOn) {
-      setReminderOn(false);
-      setReminderNote('');
-      return;
-    }
-    setReminderOn(true);
-    if (!remindersSupported) {
-      setReminderNote('Reminders pop up in the Android app 📱');
-      return;
-    }
-    const perm = await requestNotificationPermission();
-    setReminderNote(perm === 'granted' ? '' : 'Notifications are blocked. Allow them in Android Settings › Apps › Habit Tracker › Notifications.');
-  };
 
   const trimmed = name.trim();
   const isNew = !habit;
@@ -46,7 +27,7 @@ export function HabitSheet({ habit, onClose }: Props) {
       {(close) => {
         const save = () => {
           if (!trimmed) return;
-          const data = { name: trimmed, emoji, color, reminder: { enabled: reminderOn, time } };
+          const data = { name: trimmed, emoji, color };
           if (habit) dispatch({ type: 'updateHabit', id: habit.id, patch: data });
           else dispatch({ type: 'addHabit', habit: data });
           close();
@@ -145,33 +126,6 @@ export function HabitSheet({ habit, onClose }: Props) {
                   </button>
                 ))}
               </div>
-
-              <div className="setting-row card-inset">
-                <span className="setting-icon" style={{ color }}>
-                  <Bell size={20} />
-                </span>
-                <div className="setting-text">
-                  <span className="setting-title">Daily reminder</span>
-                  <span className="setting-sub">{reminderOn ? 'Pip will nudge you every day 🌱' : 'Off'}</span>
-                </div>
-                <button
-                  className={`switch${reminderOn ? ' on' : ''}`}
-                  style={reminderOn ? { background: color } : undefined}
-                  role="switch"
-                  aria-checked={reminderOn}
-                  aria-label="Daily reminder"
-                  onClick={toggleReminder}
-                >
-                  <span />
-                </button>
-              </div>
-              {reminderOn && (
-                <div className="time-row">
-                  <label htmlFor="reminder-time">Remind me at</label>
-                  <input id="reminder-time" type="time" className="time-input" value={time} onChange={(e) => setTime(e.target.value || '20:00')} />
-                </div>
-              )}
-              {reminderOn && reminderNote && <p className="reminder-note">{reminderNote}</p>}
             </div>
 
             <div className="sheet-foot">
