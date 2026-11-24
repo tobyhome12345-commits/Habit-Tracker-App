@@ -6,13 +6,16 @@ A free, offline habit tracker for Android: no ads, no account, no subscription. 
 
 ## Meet Pip
 
-**Pip** is a little sunflower-yellow seed with a sprout on his head. He's upbeat, a bit goofy and always on your side. He never guilt-trips you: streaks restart, and that's okay.
+**Pip** is a sunflower seed who's upbeat, a bit goofy and always on your side. He never guilt-trips you: streaks restart, and that's okay.
 
-- **Pip grows with you.** His sprout follows your best current streak: seedling → two leaves (3 days) → bigger leaves (7) → a bud (14) → 🌸 full bloom (30).
-- **Pip reacts to your day.** He's happy in the morning, cheers you on once you've started, celebrates a perfect day and gets sleepy late at night.
+- **Pip evolves with you.** Your best current streak changes his whole body, and he gets bigger at every stage:
+  🌰 **Seed** (0–2 days) → 🌱 **Sprout** (3+) → 🌿 **Sapling** (7+, leaf arms) → 🌷 **Bud** (14+) → 🌻 **Bloom** (30+, a full sunflower).
+- **Pip reacts to your day.** He's happy in the morning, cheers you on once you've started, celebrates a perfect day and gets sleepy late at night. All 5 moods work at every stage.
 - You'll find him on Today, in streak-milestone pop-ups, the empty states, Stats ("Pip's take"), reminder notifications, the splash screen and the app icon.
 
-<img src="docs/screenshots/pip.png" width="860" alt="Pip's moods and growth stages">
+<img src="docs/screenshots/pip.png" width="700" alt="Pip's five evolution stages and five moods">
+
+<img src="docs/screenshots/evolution.png" width="560" alt="Pip evolving in the app: seed, sapling, bud, bloom">
 
 ## Features
 

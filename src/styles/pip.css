@@ -42,8 +42,23 @@
 }
 
 .pip .pip-sprout {
-  transform-origin: 100px 70px;
+  /* transform-origin is set inline per growth stage */
   animation: pip-sway 3.8s ease-in-out infinite;
+}
+
+.pip .pip-petals {
+  transform-origin: 100px 130px;
+  animation: pip-petals 6s ease-in-out infinite;
+}
+
+@keyframes pip-petals {
+  0%,
+  100% {
+    transform: rotate(-3deg) scale(1);
+  }
+  50% {
+    transform: rotate(3deg) scale(1.02);
+  }
 }
 
 .pip--sleepy .pip-sprout {
@@ -61,7 +76,7 @@
 }
 
 .pip .pip-wave {
-  transform-origin: 148px 126px;
+  /* transform-origin is set inline at the shoulder */
   animation: pip-wave 0.55s ease-in-out infinite alternate;
 }
 

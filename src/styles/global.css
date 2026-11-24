@@ -10,7 +10,6 @@
   --sun-deep: #f5a524;
   --coral: #ff7a59;
   --ink: #221c2e;
-  --pip-rim: #ffffff;
 
   /* Light theme */
   --bg: #fbf6ee;
@@ -71,7 +70,6 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     --bg: #14111c;
-    --pip-rim: #4a4160;
     --bg-glow: rgba(255, 200, 69, 0.07);
     --surface: #1e1a28;
     --surface-2: #282334;
@@ -100,7 +98,6 @@
 
 :root[data-theme='dark'] {
   --bg: #14111c;
-  --pip-rim: #4a4160;
   --bg-glow: rgba(255, 200, 69, 0.07);
   --surface: #1e1a28;
   --surface-2: #282334;

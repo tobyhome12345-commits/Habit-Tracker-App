@@ -15,7 +15,7 @@ interface Props {
 /** Pip the seed sprout. Pure SVG, memoised, never intercepts taps. */
 export const Pip = memo(function Pip({ mood = 'happy', stage = 0, size = 96, label, className, still }: Props) {
   const rid = useId().replace(/[^a-zA-Z0-9_-]/g, '');
-  const html = useMemo(() => pipSvg({ mood, stage, id: `pip${rid}`, rim: true }), [mood, stage, rid]);
+  const html = useMemo(() => pipSvg({ mood, stage, id: `pip${rid}` }), [mood, stage, rid]);
   return (
     <span
       className={`pip-wrap${still ? ' still' : ''}${className ? ` ${className}` : ''}`}

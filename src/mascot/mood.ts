@@ -80,7 +80,9 @@ export function dayContext(state: AppState, today: DateKey, hour: number): DayCo
 
 export const GROWTH_STEPS = [3, 7, 14, 30];
 /** How Pip changes when reaching each stage (index = stage). */
-export const GROW_PHRASES = ['', 'sprouts two leaves', 'grows bigger leaves', 'grows a bud', 'blooms 🌸'];
+export const GROW_PHRASES = ['', 'sprouts', 'grows into a sapling', 'grows a flower bud', 'blooms into a sunflower 🌻'];
+/** Badge for each evolution stage. */
+export const STAGE_BADGES = ['🌰 Seed', '🌱 Sprout', '🌿 Sapling', '🌷 Bud', '🌻 Bloom'];
 
 export interface Growth {
   stage: PipStage;

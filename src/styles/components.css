@@ -521,7 +521,6 @@
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  --pip-rim: transparent;
 }
 
 .toast-text {

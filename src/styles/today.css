@@ -100,14 +100,20 @@
 
 .growth {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 9px;
   margin-top: 14px;
   padding-top: 12px;
   border-top: 1px solid var(--border);
   font-size: 13px;
   font-weight: 700;
   color: var(--text-2);
+}
+
+.growth-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .growth-label {
@@ -120,12 +126,11 @@
 }
 
 .growth-bar {
-  width: 64px;
+  flex: 1;
   height: 8px;
   border-radius: 4px;
   background: var(--leaf-soft);
   overflow: hidden;
-  flex-shrink: 0;
 }
 
 .growth-bar i {
@@ -423,4 +428,18 @@
     opacity: 0;
     transform: translate(var(--x), calc(var(--y) + 40px)) rotate(var(--r)) scale(1);
   }
+}
+
+.stage-badge {
+  flex-shrink: 0;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 13px;
+  display: inline-flex;
+  align-items: center;
+  background: var(--leaf-soft);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
 }

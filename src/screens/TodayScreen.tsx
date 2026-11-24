@@ -7,7 +7,7 @@ import { HabitCard } from '../components/HabitCard';
 import { ProgressRing } from '../components/ProgressRing';
 import { Confetti } from '../components/Confetti';
 import { Pip } from '../components/Pip';
-import { GROW_PHRASES, dayContext, greeting, pipGrowth, pipMessage, pipMood } from '../mascot/mood';
+import { STAGE_BADGES, dayContext, greeting, pipGrowth, pipMessage, pipMood } from '../mascot/mood';
 import type { DateKey, Habit } from '../lib/types';
 
 interface Props {
@@ -96,7 +96,7 @@ export function TodayScreen({ today, hour, onAdd, onEdit, onSettings, onChecked 
         <div className="hero-main">
           <div className="hero-art">
             <ProgressRing value={ctx.done / habits.length} size={124} stroke={9} color="var(--leaf)">
-              <Pip mood={mood} stage={growth.stage} size={94} label={`Pip is ${mood === 'celebrate' ? 'celebrating' : mood === 'encourage' ? 'cheering you on' : mood}`} />
+              <Pip mood={mood} stage={growth.stage} size={104} label={`Pip is ${mood === 'celebrate' ? 'celebrating' : mood === 'encourage' ? 'cheering you on' : mood}`} />
             </ProgressRing>
             {burst > 0 && <Confetti key={burst} />}
           </div>
@@ -108,20 +108,27 @@ export function TodayScreen({ today, hour, onAdd, onEdit, onSettings, onChecked 
           </div>
         </div>
         <div className="growth">
-          {growth.next !== null ? (
-            <>
-              <span className="growth-label">
-                Pip {GROW_PHRASES[growth.stage + 1]} at a <b>{growth.next}-day</b> streak
-              </span>
+          <div className="growth-row">
+            <span className="stage-badge">{STAGE_BADGES[growth.stage]}</span>
+            <span className="growth-label">
+              {growth.next !== null ? (
+                <>
+                  Next: <b>{STAGE_BADGES[growth.stage + 1]}</b> at a {growth.next}-day streak
+                </>
+              ) : (
+                <>Full bloom! Keep that {growth.best}-day streak going</>
+              )}
+            </span>
+          </div>
+          {growth.next !== null && (
+            <div className="growth-row">
               <span className="growth-bar" aria-hidden="true">
                 <i style={{ width: `${Math.min(100, (growth.best / growth.next) * 100)}%` }} />
               </span>
               <span className="growth-num">
-                {growth.best}/{growth.next}
+                {growth.best}/{growth.next} days
               </span>
-            </>
-          ) : (
-            <span className="growth-label">🌸 Full bloom! Keep that {growth.best}-day streak going</span>
+            </div>
           )}
         </div>
       </section>

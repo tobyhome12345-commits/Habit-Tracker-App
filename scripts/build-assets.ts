@@ -20,7 +20,6 @@ const RES = join(ROOT, 'android/app/src/main/res');
 const INK = '#221c2e';
 const PAPER = '#fbf6ee';
 const NIGHT = '#14111c';
-const CREAM_RIM = '#fff7e6';
 
 /** Strip the outer <svg> wrapper so Pip can be nested at any position/size. */
 function inner(svg: string): string {
@@ -43,7 +42,7 @@ const glow = (cx: number, cy: number, r: number, color: string, opacity: number)
 
 async function main() {
   mkdirSync(join(ROOT, 'assets'), { recursive: true });
-  const iconPip = pipSvg({ mood: 'happy', stage: 4, id: 'icon', shadow: false, rim: CREAM_RIM });
+  const iconPip = pipSvg({ mood: 'happy', stage: 4, id: 'icon', shadow: false });
 
   // ---- Launcher icon layers (1024²). Adaptive icons show the whole image inside the mask.
   const S = 1024;
@@ -58,15 +57,15 @@ async function main() {
 
   // ---- Splash screens (2732²): Pip waving on paper / night garden.
   const SP = 2732;
-  const splash = (bg: string, rim: string, glowOpacity: number) =>
+  const splash = (bg: string, glowOpacity: number) =>
     `<svg xmlns="http://www.w3.org/2000/svg" width="${SP}" height="${SP}"><rect width="${SP}" height="${SP}" fill="${bg}"/>${glow(1366, 1340, 700, '#ffc845', glowOpacity)}${placePip(
-      pipSvg({ mood: 'wave', stage: 2, id: 'splash', rim }),
-      1366 - 330,
-      1366 - 360,
-      660,
+      pipSvg({ mood: 'wave', stage: 2, id: 'splash' }),
+      1366 - 450,
+      1366 - 560,
+      900,
     )}</svg>`;
-  await png(splash(PAPER, '#ffffff', 0.25), join(ROOT, 'assets/splash.png'), SP);
-  await png(splash(NIGHT, '#4a4160', 0.16), join(ROOT, 'assets/splash-dark.png'), SP);
+  await png(splash(PAPER, 0.25), join(ROOT, 'assets/splash.png'), SP);
+  await png(splash(NIGHT, 0.16), join(ROOT, 'assets/splash-dark.png'), SP);
 
   // ---- Let @capacitor/assets slice the launcher icons + splash for every density.
   console.log('Running @capacitor/assets…');
@@ -117,10 +116,11 @@ async function main() {
   const moods: PipMood[] = ['happy', 'encourage', 'sleepy', 'celebrate'];
   for (const mood of moods) {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect width="256" height="256" fill="#fff1c9"/>${glow(128, 120, 150, '#ffffff', 0.7)}${placePip(
+      // Zoomed in so the sapling fills the notification picture
       pipSvg({ mood, stage: 2, id: `n-${mood}`, shadow: false }),
-      28,
-      26,
-      200,
+      -37,
+      -86,
+      330,
     )}</svg>`;
     await png(svg, join(nodpi, `pip_${mood}.png`), 256);
   }
@@ -129,7 +129,7 @@ async function main() {
   writeFileSync(
     join(ROOT, 'public/icon.svg'),
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" rx="46" fill="${INK}"/>${placePip(
-      pipSvg({ mood: 'happy', stage: 4, id: 'fav', shadow: false, rim: CREAM_RIM }),
+      pipSvg({ mood: 'happy', stage: 4, id: 'fav', shadow: false }),
       22,
       18,
       156,

@@ -6,6 +6,7 @@ import { formatDate } from '../lib/dates';
 import { dailySeries, habitPeriodStats, overallStats, periodFor, shiftPeriod, type PeriodKind } from '../lib/stats';
 import { bestStreak, currentStreak, totalDone } from '../lib/streaks';
 import { Pip } from '../components/Pip';
+import { pipGrowth } from '../mascot/mood';
 import type { PipMood } from '../mascot/pip';
 import type { DateKey } from '../lib/types';
 
@@ -167,7 +168,7 @@ export function StatsScreen({ today }: Props) {
       </div>
 
       <section className="card pip-take">
-        <Pip mood={pipTake.mood} size={58} />
+        <Pip mood={pipTake.mood} stage={pipGrowth(state, today).stage} size={58} />
         <p>
           <b>Pip’s take:</b> {pipTake.text}
         </p>
