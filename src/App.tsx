@@ -5,7 +5,7 @@ import { TabBar, type Tab } from './components/TabBar';
 import { HabitSheet } from './components/HabitSheet';
 import { SettingsSheet } from './components/SettingsSheet';
 import { MilestoneToast, type Milestone } from './components/MilestoneToast';
-import { isMilestone, pipGrowth } from './mascot/mood';
+import { isMilestone, tickLevel } from './mascot/mood';
 import { currentStreak } from './lib/streaks';
 import { successHaptic } from './lib/haptics';
 import { useThemeSync } from './lib/useSystemSync';
@@ -20,7 +20,7 @@ import './styles/today.css';
 import './styles/calendar.css';
 import './styles/stats.css';
 import { useHour, useToday } from './lib/useToday';
-import './styles/pip.css';
+import './styles/tick.css';
 
 function Shell() {
   const { state, ready } = useStore();
@@ -63,8 +63,8 @@ function Shell() {
       if (shown.current.has(key)) return;
       shown.current.add(key);
       const after = { ...before, completions: { ...before.completions, [habit.id]: days } };
-      const oldStage = pipGrowth(before, today).stage;
-      const stage = pipGrowth(after, today).stage;
+      const oldStage = tickLevel(before, today).stage;
+      const stage = tickLevel(after, today).stage;
       setMilestone({ key, habit, streak, stage, grew: stage > oldStage });
       setTimeout(successHaptic, 250);
     },

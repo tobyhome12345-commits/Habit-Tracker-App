@@ -1,24 +1,38 @@
-import { addDays } from '../lib/dates';
 import { currentStreak } from '../lib/streaks';
 import type { AppState, DateKey } from '../lib/types';
-import { growthStage, type PipMood, type PipStage } from './pip';
+import { tickStage, type TickMood, type TickStage } from './tick';
+
+export const MILESTONES = [3, 7, 14, 21, 30, 50, 75, 100, 150, 200, 365];
+
+export function isMilestone(streak: number): boolean {
+  return MILESTONES.includes(streak);
+}
+
+/** A streak this long, still unticked by this hour, counts as "at risk". */
+export const AT_RISK_STREAK = 3;
+export const AT_RISK_HOUR = 18;
 
 export interface DayContext {
   done: number;
   total: number;
   hour: number;
-  /** A streak of 3+ days ended yesterday. */
-  lostStreak: boolean;
   today: DateKey;
+  /** Longest streak on a habit that isn't done yet today (0 if none). */
+  atRisk: number;
+  /** Name of that habit. */
+  atRiskName: string;
+  /** A streak milestone hit today (0 if none). */
+  milestone: number;
 }
 
-/** How Pip feels about your day. */
-export function pipMood(c: DayContext): PipMood {
-  if (c.total === 0) return 'wave';
+/** How Tick feels about your day. */
+export function tickMood(c: DayContext): TickMood {
+  if (c.total === 0) return 'happy';
   if (c.done === c.total) return 'celebrate';
-  if (c.hour >= 22 || c.hour < 5) return 'sleepy';
-  if (c.done === 0 && !c.lostStreak) return 'happy';
-  return 'encourage';
+  if (c.milestone > 0) return 'proud';
+  if (c.atRisk >= AT_RISK_STREAK && c.hour >= AT_RISK_HOUR) return 'encourage';
+  if (c.done === 0) return 'sleepy';
+  return 'happy';
 }
 
 /** Small stable hash so the message only changes once a day (no flicker between renders). */
@@ -39,67 +53,71 @@ export function greeting(hour: number): string {
   return { morning: 'Good morning', afternoon: 'Good afternoon', evening: 'Good evening' }[partOfDay(hour)];
 }
 
-/** What Pip says in the speech bubble. */
-export function pipMessage(c: DayContext, mood: PipMood): string {
+/** What Tick says in the speech bubble: playful, short, a bit cheeky. */
+export function tickMessage(c: DayContext, mood: TickMood): string {
   const left = c.total - c.done;
   const seed = c.today + mood + left;
+  if (c.total === 0) return 'Hi, I’m Tick! Give me something to check off 👋';
   switch (mood) {
-    case 'wave':
-      return 'Hi, I’m Pip! I grow when you do 🌱';
     case 'celebrate':
-      return pick(['Perfect day! I’m doing my happy dance 💃', 'Every single one! So proud of you 🥹', 'All done! You’re unstoppable 🌟', 'Clean sweep! Time to relax 😎'], seed);
-    case 'sleepy':
-      return left === 1
-        ? 'Yawn… just one more, then bed? 😴'
-        : pick(['Yawn… still time for a tiny habit before bed 😴', 'Nearly bedtime. One quick win first? 🌙'], seed);
-    case 'happy':
-      return {
-        morning: pick(['Morning! Let’s grow something today 🌱', 'Rise and shine! Ready when you are ☀️'], seed),
-        afternoon: pick(['Hey you! Got a minute for a habit? ☀️', 'Afternoon! Let’s get one on the board 💫'], seed),
-        evening: pick(['Evening! There’s still time ✨', 'Hey! A tiny habit before dinner? 🍽️'], seed),
-      }[partOfDay(c.hour)];
+      return pick(['ALL DONE?! I’m literally jumping 🎉', 'Every box ticked. Show-off 😏', 'Perfect day! Tick-tastic ✓✓✓', 'Clean sweep! Take a bow 🙌'], seed);
+    case 'proud':
+      return pick([`${c.milestone} days?! Okay, legend 😤`, `A ${c.milestone}-day streak. I’m not crying, you are 🥹`, `${c.milestone} days in a row. Look at you go ✨`], seed);
     case 'encourage':
-      if (c.done === 0) return 'Streaks restart, and that’s okay. Let’s begin again 🌱';
+      return pick(
+        [`Your ${c.atRisk}-day streak is sweating. Save it! 💪`, `Psst… ${c.atRiskName} is waiting. Don’t break the chain!`, `${c.atRisk} days on the line. You’ve got this 👊`],
+        seed,
+      );
+    case 'sleepy':
+      return {
+        morning: pick(['Yawn… is it habit o’clock already? 😴', '*stretches* One tick and I’m awake ☀️'], seed),
+        afternoon: pick(['Zzz… poke me with a tick? 💤', 'Still on snooze. One tick wakes me up!'], seed),
+        evening: pick(['Yawn… one tiny tick before bed? 🌙', 'I’m sleepy, but I’ll stay up for one tick 😴'], seed),
+      }[partOfDay(c.hour)];
+    case 'happy':
+    default:
       return left === 1
-        ? pick(['Just ONE left! You’ve got this 💪', 'So close! One more for a perfect day ⭐'], seed)
-        : pick([`Nice! ${left} to go. Keep it rolling 🚀`, `Look at you go! Just ${left} left 💪`, `${c.done} down, ${left} to go. You’ve got this ✨`], seed);
+        ? pick(['One left. Don’t leave me hanging! ✓', 'Last one! Then we party 🎉', 'So close I can taste it. One more!'], seed)
+        : pick([`${c.done} down, ${left} to go. Easy, right? 😏`, `Nice tick! ${left} more and I’ll do a flip`, `Ooh, momentum! ${left} left, keep ticking ✓`, `You’re on a roll. ${left} to go, no pressure 😎`], seed);
   }
 }
 
 export function dayContext(state: AppState, today: DateKey, hour: number): DayContext {
-  const yesterday = addDays(today, -1);
   let done = 0;
-  let lostStreak = false;
+  let atRisk = 0;
+  let atRiskName = '';
+  let milestone = 0;
   for (const h of state.habits) {
     const d = state.completions[h.id];
-    if (d?.[today]) done++;
-    else if (!d?.[yesterday] && currentStreak(d, yesterday) >= 3) lostStreak = true;
+    // currentStreak counts from yesterday when today isn't done yet
+    const streak = currentStreak(d, today);
+    if (d?.[today]) {
+      done++;
+      if (isMilestone(streak)) milestone = Math.max(milestone, streak);
+    } else if (streak > atRisk) {
+      atRisk = streak;
+      atRiskName = h.name;
+    }
   }
-  return { done, total: state.habits.length, hour, lostStreak, today };
+  return { done, total: state.habits.length, hour, today, atRisk, atRiskName, milestone };
 }
 
-export const GROWTH_STEPS = [3, 7, 14, 30];
-/** How Pip changes when reaching each stage (index = stage). */
-export const GROW_PHRASES = ['', 'sprouts', 'grows into a sapling', 'grows a flower bud', 'blooms into a sunflower 🌻'];
-/** Badge for each evolution stage. */
-export const STAGE_BADGES = ['🌰 Seed', '🌱 Sprout', '🌿 Sapling', '🌷 Bud', '🌻 Bloom'];
+export const LEVEL_STEPS = [3, 7, 14, 30];
+/** Badge for each level (index = stage). */
+export const STAGE_BADGES = ['✏️ Faint', '🎨 Fresh', '💪 Bold', '✨ Golden', '👑 Legend'];
+/** What happens to Tick when he reaches each level. */
+export const LEVEL_UP = ['', 'is filling up with colour', 'went Bold', 'turned Golden', 'is a LEGEND'];
 
-export interface Growth {
-  stage: PipStage;
+export interface Level {
+  stage: TickStage;
   best: number;
-  /** Streak needed for the next stage, or null at full bloom. */
+  /** Streak needed for the next level, or null at Legend. */
   next: number | null;
 }
 
-/** Pip's growth follows your best current streak across all habits. */
-export function pipGrowth(state: AppState, today: DateKey): Growth {
+/** Tick levels up with your best current streak across all habits. */
+export function tickLevel(state: AppState, today: DateKey): Level {
   let best = 0;
   for (const h of state.habits) best = Math.max(best, currentStreak(state.completions[h.id], today));
-  return { stage: growthStage(best), best, next: GROWTH_STEPS.find((s) => s > best) ?? null };
-}
-
-export const MILESTONES = [3, 7, 14, 21, 30, 50, 75, 100, 150, 200, 365];
-
-export function isMilestone(streak: number): boolean {
-  return MILESTONES.includes(streak);
+  return { stage: tickStage(best), best, next: LEVEL_STEPS.find((s) => s > best) ?? null };
 }

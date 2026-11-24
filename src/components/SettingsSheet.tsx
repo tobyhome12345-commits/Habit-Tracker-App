@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
 import { Download, Trash2, Upload, X } from 'lucide-react';
-import { Pip } from './Pip';
+import { Tick } from './Tick';
 import { Sheet } from './Sheet';
 import { useStore } from '../lib/store';
 import { defaultState } from '../lib/storage';
@@ -122,18 +122,18 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
                 if (!confirmReset) return setConfirmReset(true);
                 dispatch({ type: 'load', state: { ...defaultState(), settings } });
                 setConfirmReset(false);
-                setMsg({ kind: 'ok', text: 'All habits deleted. Fresh start! 🌱' });
+                setMsg({ kind: 'ok', text: 'All habits deleted. Fresh start! ✓' });
               }}
             >
               <Trash2 size={18} /> {confirmReset ? 'Tap again to delete ALL habits' : 'Reset everything'}
             </button>
 
             <div className="about">
-              <Pip mood="happy" stage={4} size={56} still />
+              <Tick mood="proud" stage={4} size={56} still />
               <p>
                 <b>Habit Tracker</b> {version}
                 <br />
-                Grown with love by Pip 🌱 Free forever. No ads, no account, no subscription.
+                Cheered on by Tick ✓ Free forever. No ads, no account, no subscription.
               </p>
             </div>
           </div>

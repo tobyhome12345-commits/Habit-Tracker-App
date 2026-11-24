@@ -6,9 +6,19 @@ import { successHaptic, tapHaptic } from '../lib/haptics';
 import { HabitCard } from '../components/HabitCard';
 import { ProgressRing } from '../components/ProgressRing';
 import { Confetti } from '../components/Confetti';
-import { Pip } from '../components/Pip';
-import { STAGE_BADGES, dayContext, greeting, pipGrowth, pipMessage, pipMood } from '../mascot/mood';
+import { Tick } from '../components/Tick';
+import { STAGE_BADGES, dayContext, greeting, tickLevel, tickMessage, tickMood } from '../mascot/mood';
+import type { TickMood } from '../mascot/tick';
 import type { DateKey, Habit } from '../lib/types';
+
+const MOOD_LABEL: Record<TickMood, string> = {
+  happy: 'happy and waving',
+  celebrate: 'celebrating',
+  sleepy: 'sleepy',
+  encourage: 'cheering you on',
+  proud: 'proud of you',
+  shrug: 'shrugging',
+};
 
 interface Props {
   today: DateKey;
@@ -23,12 +33,13 @@ export function TodayScreen({ today, hour, onAdd, onEdit, onSettings, onChecked 
   const { state, dispatch } = useStore();
   const { habits, completions } = state;
   const ctx = dayContext(state, today, hour);
-  const mood = pipMood(ctx);
-  const growth = pipGrowth(state, today);
+  const mood = tickMood(ctx);
+  const growth = tickLevel(state, today);
   const allDone = habits.length > 0 && ctx.done === habits.length;
 
   // Confetti when the last habit of the day gets ticked (not on first render).
   const [burst, setBurst] = useState(0);
+  const [hop, setHop] = useState(0);
   const prevAllDone = useRef(allDone);
   useEffect(() => {
     if (allDone && !prevAllDone.current) setBurst((b) => b + 1);
@@ -40,6 +51,7 @@ export function TodayScreen({ today, hour, onAdd, onEdit, onSettings, onChecked 
       const wasDone = !!state.completions[id]?.[date];
       dispatch({ type: 'toggle', id, date });
       if (wasDone) return;
+      if (date === today) setHop((n) => n + 1);
       const habit = habits.find((h) => h.id === id);
       if (habit) onChecked(habit, date);
       const willAllBeDone = date === today && habits.every((h) => h.id === id || state.completions[h.id]?.[today]);
@@ -76,12 +88,12 @@ export function TodayScreen({ today, hour, onAdd, onEdit, onSettings, onChecked 
         {header}
         <section className="card empty hello">
           <div className="hello-art">
-            <Pip mood="wave" size={156} label="Pip the seed sprout, waving hello" />
+            <Tick mood="happy" stage={2} size={156} label="Tick the checkmark, waving hello" />
           </div>
-          <h2>Hi, I’m Pip!</h2>
-          <p>I’m a little seed who grows when you keep your habits. Plant your first one and let’s start a streak together.</p>
+          <h2>Hi, I’m Tick!</h2>
+          <p>I’m a checkmark with big dreams. Add a habit, tick it off every day, and watch me level up from Faint to Legend 👑</p>
           <button className="btn btn-primary" onClick={onAdd}>
-            <Plus size={20} strokeWidth={2.6} /> Plant your first habit
+            <Plus size={20} strokeWidth={2.6} /> Add your first habit
           </button>
         </section>
       </main>
@@ -96,12 +108,12 @@ export function TodayScreen({ today, hour, onAdd, onEdit, onSettings, onChecked 
         <div className="hero-main">
           <div className="hero-art">
             <ProgressRing value={ctx.done / habits.length} size={124} stroke={9} color="var(--leaf)">
-              <Pip mood={mood} stage={growth.stage} size={104} label={`Pip is ${mood === 'celebrate' ? 'celebrating' : mood === 'encourage' ? 'cheering you on' : mood}`} />
+              <Tick mood={mood} stage={growth.stage} size={104} hop={hop} label={`Tick is ${MOOD_LABEL[mood]}`} />
             </ProgressRing>
             {burst > 0 && <Confetti key={burst} />}
           </div>
           <div className="hero-text">
-            <p className="bubble">{pipMessage(ctx, mood)}</p>
+            <p className="bubble">{tickMessage(ctx, mood)}</p>
             <p className="hero-count">
               <strong>{ctx.done}</strong> of {habits.length} done
             </p>
@@ -116,7 +128,7 @@ export function TodayScreen({ today, hour, onAdd, onEdit, onSettings, onChecked 
                   Next: <b>{STAGE_BADGES[growth.stage + 1]}</b> at a {growth.next}-day streak
                 </>
               ) : (
-                <>Full bloom! Keep that {growth.best}-day streak going</>
+                <>Max level! Keep that {growth.best}-day streak going</>
               )}
             </span>
           </div>

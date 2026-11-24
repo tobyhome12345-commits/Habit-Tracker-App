@@ -388,7 +388,7 @@
   animation: toast-in 0.55s var(--spring), toast-out 0.35s ease-in 3.85s forwards;
 }
 
-.toast-pip {
+.toast-tick {
   width: 64px;
   height: 64px;
   border-radius: 20px;

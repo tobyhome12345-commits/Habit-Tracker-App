@@ -5,7 +5,7 @@ import { addDays, addMonths, eachDay, endOfMonth, formatDate, startOfMonth, star
 import { alpha, onColor } from '../lib/colors';
 import { habitStart } from '../lib/stats';
 import { tapHaptic } from '../lib/haptics';
-import { Pip } from '../components/Pip';
+import { Tick } from '../components/Tick';
 import type { DateKey, Habit } from '../lib/types';
 
 interface Props {
@@ -117,8 +117,8 @@ export function CalendarScreen({ today, selected, onSelect }: Props) {
           <h1>Calendar</h1>
         </header>
         <div className="card empty">
-          <Pip mood="sleepy" size={130} label="Pip napping" />
-          <h2>Pip’s napping…</h2>
+          <Tick mood="sleepy" size={130} label="Tick napping" />
+          <h2>Tick’s napping…</h2>
           <p>Add a habit on the Today tab and your days will light up here.</p>
         </div>
       </main>

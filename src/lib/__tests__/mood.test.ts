@@ -1,11 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { dayContext, isMilestone, pipGrowth, pipMessage, pipMood } from '../../mascot/mood';
-import { growthStage } from '../../mascot/pip';
+import { dayContext, isMilestone, tickLevel, tickMessage, tickMood, type DayContext } from '../../mascot/mood';
+import { tickStage } from '../../mascot/tick';
 import { defaultState } from '../storage';
 import type { AppState } from '../types';
 
 const today = '2026-11-24';
-const ctx = (done: number, total: number, hour = 10, lostStreak = false) => ({ done, total, hour, lostStreak, today });
+const ctx = (done: number, total: number, extra: Partial<DayContext> = {}): DayContext => ({
+  done,
+  total,
+  hour: 10,
+  today,
+  atRisk: 0,
+  atRiskName: '',
+  milestone: 0,
+  ...extra,
+});
 
 function stateWith(days: Record<string, string[]>): AppState {
   const s = defaultState();
@@ -16,45 +25,54 @@ function stateWith(days: Record<string, string[]>): AppState {
   return s;
 }
 
-describe('pipMood', () => {
-  it('waves with no habits and celebrates a perfect day', () => {
-    expect(pipMood(ctx(0, 0))).toBe('wave');
-    expect(pipMood(ctx(3, 3, 23))).toBe('celebrate');
+describe('tickMood', () => {
+  it('waves hello with no habits and celebrates a perfect day', () => {
+    expect(tickMood(ctx(0, 0))).toBe('happy');
+    expect(tickMood(ctx(3, 3, { hour: 23 }))).toBe('celebrate');
   });
-  it('is happy before you start, encouraging once you have', () => {
-    expect(pipMood(ctx(0, 3))).toBe('happy');
-    expect(pipMood(ctx(1, 3))).toBe('encourage');
+  it('is sleepy until the first tick, then happy', () => {
+    expect(tickMood(ctx(0, 3))).toBe('sleepy');
+    expect(tickMood(ctx(1, 3))).toBe('happy');
   });
-  it('gets sleepy late at night and cheers you up after a lost streak', () => {
-    expect(pipMood(ctx(1, 3, 22))).toBe('sleepy');
-    expect(pipMood(ctx(0, 3, 3))).toBe('sleepy');
-    expect(pipMood(ctx(0, 3, 10, true))).toBe('encourage');
+  it('cheers you on when a streak is at risk in the evening', () => {
+    expect(tickMood(ctx(1, 3, { atRisk: 5, hour: 19 }))).toBe('encourage');
+    expect(tickMood(ctx(0, 3, { atRisk: 5, hour: 20 }))).toBe('encourage');
+    expect(tickMood(ctx(1, 3, { atRisk: 5, hour: 10 }))).toBe('happy'); // plenty of time left
+    expect(tickMood(ctx(1, 3, { atRisk: 1, hour: 21 }))).toBe('happy'); // not much of a streak yet
   });
-  it('keeps the same message all day', () => {
+  it('is proud on a milestone day', () => {
+    expect(tickMood(ctx(1, 3, { milestone: 7 }))).toBe('proud');
+    expect(tickMood(ctx(3, 3, { milestone: 7 }))).toBe('celebrate');
+  });
+  it('keeps the same message all day and fills in the details', () => {
     const c = ctx(1, 4);
-    expect(pipMessage(c, 'encourage')).toBe(pipMessage({ ...c }, 'encourage'));
-    expect(pipMessage(c, 'encourage')).toMatch(/3/);
+    expect(tickMessage(c, 'happy')).toBe(tickMessage({ ...c }, 'happy'));
+    expect(tickMessage(c, 'happy')).toMatch(/3/);
+    expect(tickMessage(ctx(1, 3, { milestone: 30 }), 'proud')).toMatch(/30/);
   });
 });
 
 describe('dayContext', () => {
-  it('detects a 3+ day streak that ended yesterday', () => {
-    const s = stateWith({ a: ['2026-11-20', '2026-11-21', '2026-11-22'], b: ['2026-11-24'] });
-    expect(dayContext(s, today, 9)).toMatchObject({ done: 1, total: 2, lostStreak: true });
+  it('finds the streak at risk and today’s milestone', () => {
+    const s = stateWith({
+      a: ['2026-11-20', '2026-11-21', '2026-11-22', '2026-11-23'], // 4-day streak, not done today
+      b: ['2026-11-18', '2026-11-19', '2026-11-20', '2026-11-21', '2026-11-22', '2026-11-23', '2026-11-24'], // hits 7 today
+    });
+    expect(dayContext(s, today, 9)).toMatchObject({ done: 1, total: 2, atRisk: 4, atRiskName: 'a', milestone: 7 });
   });
-  it('does not flag streaks that are still alive', () => {
-    const s = stateWith({ a: ['2026-11-21', '2026-11-22', '2026-11-23'] });
-    expect(dayContext(s, today, 9).lostStreak).toBe(false);
+  it('has nothing at risk when the streaks are already done today', () => {
+    const s = stateWith({ a: ['2026-11-22', '2026-11-23', '2026-11-24'] });
+    expect(dayContext(s, today, 20)).toMatchObject({ atRisk: 0, milestone: 3 });
   });
 });
 
-describe('growth & milestones', () => {
-  it('maps streaks to stages', () => {
-    expect([0, 2, 3, 6, 7, 13, 14, 29, 30, 400].map(growthStage)).toEqual([0, 0, 1, 1, 2, 2, 3, 3, 4, 4]);
+describe('levels & milestones', () => {
+  it('maps streaks to levels', () => {
+    expect([0, 2, 3, 6, 7, 13, 14, 29, 30, 400].map(tickStage)).toEqual([0, 0, 1, 1, 2, 2, 3, 3, 4, 4]);
   });
-  it('uses the best current streak and knows the next step', () => {
+  it('uses the best current streak and knows the next level', () => {
     const s = stateWith({ a: ['2026-11-20', '2026-11-21', '2026-11-22', '2026-11-23', '2026-11-24'], b: ['2026-11-24'] });
-    expect(pipGrowth(s, today)).toEqual({ stage: 1, best: 5, next: 7 });
+    expect(tickLevel(s, today)).toEqual({ stage: 1, best: 5, next: 7 });
   });
   it('knows milestone days', () => {
     expect([3, 7, 8, 30, 100, 101].map(isMilestone)).toEqual([true, true, false, true, true, false]);

@@ -1,5 +1,5 @@
 /**
- * Renders every native image from Pip's single SVG source.
+ * Renders every native image from Tick's single SVG source.
  *
  *   npm run assets
  *
@@ -11,21 +11,36 @@ import { execSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import sharp from 'sharp';
-import { pipKnockoutSvg, pipSvg } from '../src/mascot/pip.ts';
+import { tickKnockoutSvg, tickSvg } from '../src/mascot/tick.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const RES = join(ROOT, 'android/app/src/main/res');
 const INK = '#221c2e';
 const PAPER = '#fbf6ee';
 const NIGHT = '#14111c';
+const RIM_DARK = '#4a4062';
 
-/** Strip the outer <svg> wrapper so Pip can be nested at any position/size. */
+/**
+ * Tick's checkmark (no limbs) spans x 16–188, y 10–175 of his 200-unit artboard.
+ * Centring on this point and keeping his farthest edge (the long stroke's tip,
+ * 108 units away) inside a circle keeps him whole under any launcher mask.
+ */
+const ICON_CENTER: [number, number] = [102, 92.5];
+const ICON_REACH = 108;
+
+/** Strip the outer <svg> wrapper so Tick can be nested at any position/size. */
 function inner(svg: string): string {
   return svg.replace(/^[\s\S]*?<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '');
 }
 
-function placePip(svg: string, x: number, y: number, size: number): string {
+function place(svg: string, x: number, y: number, size: number): string {
   return `<svg x="${x}" y="${y}" width="${size}" height="${size}" viewBox="0 0 200 200" overflow="visible">${inner(svg)}</svg>`;
+}
+
+/** Place Tick so his checkmark is centred and reaches `radius` (a share of the frame) at most. */
+function placeIcon(svg: string, frame: number, radius: number): string {
+  const size = ((radius * frame) / ICON_REACH) * 200;
+  return place(svg, frame / 2 - (size * ICON_CENTER[0]) / 200, frame / 2 - (size * ICON_CENTER[1]) / 200, size);
 }
 
 async function png(svg: string, out: string, size: number) {
@@ -40,30 +55,33 @@ const glow = (cx: number, cy: number, r: number, color: string, opacity: number)
 
 async function main() {
   mkdirSync(join(ROOT, 'assets'), { recursive: true });
-  const iconPip = pipSvg({ mood: 'happy', stage: 4, id: 'icon', shadow: false });
+  // Just the checkmark + face: the silhouette stays obvious even at 24px.
+  const iconTick = tickSvg({ mood: 'happy', stage: 2, id: 'icon', shadow: false, limbs: false, extras: false, rim: false });
 
   // ---- Launcher icon layers (1024²). Adaptive icons show the whole image inside the mask.
   const S = 1024;
-  const pipSize = 780;
-  const off = (S - pipSize) / 2;
-  const background = `<svg xmlns="http://www.w3.org/2000/svg" width="${S}" height="${S}"><rect width="${S}" height="${S}" fill="${INK}"/>${glow(512, 470, 520, '#ffc845', 0.22)}</svg>`;
-  const foreground = `<svg xmlns="http://www.w3.org/2000/svg" width="${S}" height="${S}">${placePip(iconPip, off, off - 14, pipSize)}</svg>`;
-  const full = `<svg xmlns="http://www.w3.org/2000/svg" width="${S}" height="${S}"><rect width="${S}" height="${S}" fill="${INK}"/>${glow(512, 470, 520, '#ffc845', 0.22)}${placePip(iconPip, off, off - 14, pipSize)}</svg>`;
+  const R = 0.42; // reach as a share of the frame (the safe circle is 0.458)
+  const bg = `<rect width="${S}" height="${S}" fill="${INK}"/>${glow(512, 520, 470, '#ffc845', 0.26)}`;
+  const background = `<svg xmlns="http://www.w3.org/2000/svg" width="${S}" height="${S}">${bg}</svg>`;
+  const foreground = `<svg xmlns="http://www.w3.org/2000/svg" width="${S}" height="${S}">${placeIcon(iconTick, S, R)}</svg>`;
+  const full = `<svg xmlns="http://www.w3.org/2000/svg" width="${S}" height="${S}">${bg}${placeIcon(iconTick, S, R)}</svg>`;
+  const mono = `<svg xmlns="http://www.w3.org/2000/svg" width="${S}" height="${S}">${placeIcon(tickKnockoutSvg('happy', 200, '#ffffff'), S, R)}</svg>`;
   await png(background, join(ROOT, 'assets/icon-background.png'), S);
   await png(foreground, join(ROOT, 'assets/icon-foreground.png'), S);
   await png(full, join(ROOT, 'assets/icon-only.png'), S);
+  await png(mono, join(ROOT, 'assets/icon-monochrome.png'), S);
 
-  // ---- Splash screens (2732²): Pip waving on paper / night garden.
+  // ---- Splash screens (2732²): Tick waving on paper / night.
   const SP = 2732;
-  const splash = (bg: string, glowOpacity: number) =>
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${SP}" height="${SP}"><rect width="${SP}" height="${SP}" fill="${bg}"/>${glow(1366, 1340, 700, '#ffc845', glowOpacity)}${placePip(
-      pipSvg({ mood: 'wave', stage: 2, id: 'splash' }),
-      1366 - 450,
-      1366 - 560,
-      900,
+  const splash = (bgColor: string, glowOpacity: number, rim: string) =>
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${SP}" height="${SP}"><rect width="${SP}" height="${SP}" fill="${bgColor}"/>${glow(1366, 1330, 720, '#ffc845', glowOpacity)}${place(
+      tickSvg({ mood: 'happy', stage: 2, id: 'splash', extras: false }).replace('color="transparent"', `color="${rim}"`),
+      1366 - 510,
+      1366 - 505,
+      1000,
     )}</svg>`;
-  await png(splash(PAPER, 0.25), join(ROOT, 'assets/splash.png'), SP);
-  await png(splash(NIGHT, 0.16), join(ROOT, 'assets/splash-dark.png'), SP);
+  await png(splash(PAPER, 0.28, 'transparent'), join(ROOT, 'assets/splash.png'), SP);
+  await png(splash(NIGHT, 0.18, RIM_DARK), join(ROOT, 'assets/splash-dark.png'), SP);
 
   // ---- Let @capacitor/assets slice the launcher icons + splash for every density.
   console.log('Running @capacitor/assets…');
@@ -72,19 +90,13 @@ async function main() {
   // ---- Adaptive layers at their true size. The XML insets each layer by 16.7%, so the image
   // fills the 72dp visible area: 72dp × density (sharper than the tool's default sizes).
   const DENSITY: Record<string, number> = { ldpi: 0.75, mdpi: 1, hdpi: 1.5, xhdpi: 2, xxhdpi: 3, xxxhdpi: 4 };
-  const mono = pipKnockoutSvg('happy', 4, 200, '#ffffff');
   for (const dir of readdirSync(RES).filter((d) => d.startsWith('mipmap-') && !d.includes('anydpi'))) {
     const fg = join(RES, dir, 'ic_launcher_foreground.png');
     if (!existsSync(fg)) continue;
     const w = Math.round(72 * (DENSITY[dir.replace('mipmap-', '')] ?? 1));
     await sharp(join(ROOT, 'assets/icon-foreground.png')).resize(w, w).png().toFile(fg);
     await sharp(join(ROOT, 'assets/icon-background.png')).resize(w, w).png().toFile(join(RES, dir, 'ic_launcher_background.png'));
-    const pad = Math.round(w * 0.16);
-    const art = await sharp(Buffer.from(mono)).resize(w - pad * 2, w - pad * 2).png().toBuffer();
-    await sharp({ create: { width: w, height: w, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
-      .composite([{ input: art, left: pad, top: pad - Math.round(w * 0.01) }])
-      .png()
-      .toFile(join(RES, dir, 'ic_launcher_monochrome.png'));
+    await sharp(join(ROOT, 'assets/icon-monochrome.png')).resize(w, w).png().toFile(join(RES, dir, 'ic_launcher_monochrome.png'));
   }
   for (const xml of ['ic_launcher.xml', 'ic_launcher_round.xml']) {
     const p = join(RES, 'mipmap-anydpi-v26', xml);
@@ -102,11 +114,10 @@ async function main() {
   // ---- Favicon
   writeFileSync(
     join(ROOT, 'public/icon.svg'),
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" rx="46" fill="${INK}"/>${placePip(
-      pipSvg({ mood: 'happy', stage: 4, id: 'fav', shadow: false }),
-      22,
-      18,
-      156,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" rx="46" fill="${INK}"/>${placeIcon(
+      tickSvg({ mood: 'happy', stage: 2, id: 'fav', shadow: false, limbs: false, extras: false, rim: false }),
+      200,
+      0.4,
     )}</svg>`,
   );
   console.log('  wrote public/icon.svg\nDone ✨');

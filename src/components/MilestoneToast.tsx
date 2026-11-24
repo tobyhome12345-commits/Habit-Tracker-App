@@ -1,25 +1,26 @@
 import { useEffect } from 'react';
-import { Pip } from './Pip';
-import { GROW_PHRASES } from '../mascot/mood';
-import type { PipStage } from '../mascot/pip';
+import { Tick } from './Tick';
+import { LEVEL_UP } from '../mascot/mood';
+import type { TickStage } from '../mascot/tick';
 import type { Habit } from '../lib/types';
 
 export interface Milestone {
   key: string;
   habit: Habit;
   streak: number;
-  stage: PipStage;
+  stage: TickStage;
   grew: boolean;
 }
 
 function headline(streak: number): string {
-  if (streak === 3) return '3-day streak! You’re on a roll 🔥';
-  if (streak === 7) return 'One whole week! 🔥';
+  if (streak === 3) return '3 in a row! Tick approves ✓';
+  if (streak === 7) return 'A whole week! 🔥';
   if (streak === 14) return 'Two weeks strong! 💪';
-  if (streak === 21) return '21 days! That’s a real habit now 🧠';
-  if (streak === 30) return '30 days! Legendary 🏆';
-  if (streak === 365) return 'ONE YEAR! Pip is speechless 🥹';
-  return `${streak}-day streak! Incredible 🌟`;
+  if (streak === 21) return '21 days. That’s a real habit now 🧠';
+  if (streak === 30) return '30 days?! Legend status 👑';
+  if (streak === 100) return '100 DAYS! Tick can’t even 😭';
+  if (streak === 365) return 'ONE YEAR! Tick is speechless 🥹';
+  return `${streak}-day streak! Unstoppable 🌟`;
 }
 
 /** Non-blocking celebration that slides in from the top and leaves on its own. */
@@ -32,14 +33,14 @@ export function MilestoneToast({ m, onDone }: { m: Milestone; onDone: () => void
   return (
     <div className="toast-layer" aria-live="polite">
       <button key={m.key} className="toast" onClick={onDone} aria-label={`${headline(m.streak)} ${m.habit.name}. Tap to dismiss.`}>
-        <span className="toast-pip">
-          <Pip mood="celebrate" stage={m.stage} size={64} />
+        <span className="toast-tick">
+          <Tick mood="proud" stage={m.stage} size={64} />
         </span>
         <span className="toast-text">
           <span className="toast-title">{headline(m.streak)}</span>
           <span className="toast-sub">
             {m.habit.emoji} {m.habit.name}
-            {m.grew ? ` · Pip ${GROW_PHRASES[m.stage]}!` : ''}
+            {m.grew ? ` · Tick ${LEVEL_UP[m.stage]}!` : ''}
           </span>
         </span>
       </button>

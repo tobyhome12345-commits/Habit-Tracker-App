@@ -271,8 +271,8 @@
   color: var(--text-3);
 }
 
-/* ---------- Pip's take ---------- */
-.pip-take {
+/* ---------- Tick's take ---------- */
+.tick-take {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -283,14 +283,14 @@
     var(--surface);
 }
 
-.pip-take p {
+.tick-take p {
   font-size: 14px;
   font-weight: 600;
   color: var(--text-2);
   line-height: 1.4;
 }
 
-.pip-take b {
+.tick-take b {
   font-family: var(--font-display);
   font-weight: 600;
   color: var(--text);

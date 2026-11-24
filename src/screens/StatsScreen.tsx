@@ -5,9 +5,9 @@ import { alpha } from '../lib/colors';
 import { formatDate } from '../lib/dates';
 import { dailySeries, habitPeriodStats, overallStats, periodFor, shiftPeriod, type PeriodKind } from '../lib/stats';
 import { bestStreak, currentStreak, totalDone } from '../lib/streaks';
-import { Pip } from '../components/Pip';
-import { pipGrowth } from '../mascot/mood';
-import type { PipMood } from '../mascot/pip';
+import { Tick } from '../components/Tick';
+import { tickLevel } from '../mascot/mood';
+import type { TickMood } from '../mascot/tick';
 import type { DateKey } from '../lib/types';
 
 interface Props {
@@ -62,19 +62,19 @@ export function StatsScreen({ today }: Props) {
           : '';
   const prevName = kind === 'week' ? 'last week' : 'last month';
 
-  // Pip's take on the period
-  const pipTake: { mood: PipMood; text: string } =
+  // Tick's take on the period
+  const tickTake: { mood: TickMood; text: string } =
     overall.rate === null
-      ? { mood: 'wave', text: 'Nothing to measure here yet. Let’s fill it up 🌱' }
+      ? { mood: 'shrug', text: 'Nothing to count yet. I’m just standing here 🤷' }
       : delta === null
-        ? { mood: 'wave', text: `Your first ${kind}! Every check-off counts 🌱` }
+        ? { mood: 'happy', text: `Your first ${kind}! Every tick counts ✓` }
         : delta >= 5
-          ? { mood: 'celebrate', text: `Up ${delta} points on ${prevName}! Happy dance time 💃` }
+          ? { mood: 'celebrate', text: `Up ${delta} points on ${prevName}! Who even are you?! 🎉` }
           : delta <= -5
-            ? { mood: 'encourage', text: `A little dip vs ${prevName}. Small steps bring it back 🌱` }
+            ? { mood: 'encourage', text: `A little dip vs ${prevName}. Happens! Let’s bounce back 💪` }
             : overall.rate >= 0.8
-              ? { mood: 'celebrate', text: 'Rock solid and consistent. That’s how habits stick 🌳' }
-              : { mood: 'happy', text: `Steady vs ${prevName}. One extra check-off a day makes a big difference ✨` };
+              ? { mood: 'proud', text: 'Rock solid. Honestly? Kinda showing off 😎' }
+              : { mood: 'happy', text: `Steady vs ${prevName}. One extra tick a day adds up fast ✨` };
 
   const pickedDay = series.find((d) => d.date === picked);
   const readout = pickedDay
@@ -88,8 +88,8 @@ export function StatsScreen({ today }: Props) {
           <h1>Stats</h1>
         </header>
         <div className="card empty">
-          <Pip mood="sleepy" size={130} label="Pip napping" />
-          <h2>Pip’s napping…</h2>
+          <Tick mood="sleepy" size={130} label="Tick napping" />
+          <h2>Tick’s napping…</h2>
           <p>Add a habit and check it off, and your weekly and monthly progress will show up here.</p>
         </div>
       </main>
@@ -167,10 +167,10 @@ export function StatsScreen({ today }: Props) {
         </div>
       </div>
 
-      <section className="card pip-take">
-        <Pip mood={pipTake.mood} stage={pipGrowth(state, today).stage} size={58} />
+      <section className="card tick-take">
+        <Tick mood={tickTake.mood} stage={tickLevel(state, today).stage} size={58} />
         <p>
-          <b>Pip’s take:</b> {pipTake.text}
+          <b>Tick’s take:</b> {tickTake.text}
         </p>
       </section>
 

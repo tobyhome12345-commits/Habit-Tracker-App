@@ -1,7 +1,7 @@
 /* =====================================================================
    "Garden notebook" design system
    Warm paper + ink in the day, a cosy night garden in the dark.
-   Brand: sunflower (Pip), leaf (growth / done), coral (streak fire).
+   Brand: sunflower (Tick), leaf (growth / done), coral (streak fire).
    ===================================================================== */
 
 :root {
@@ -85,6 +85,9 @@
     --leaf: #4acb88;
     --leaf-soft: rgba(74, 203, 136, 0.16);
     --sun-soft: rgba(255, 200, 69, 0.14);
+    --tick-rim: #4a4062;
+    --tick-shadow: #000;
+    --tick-shadow-a: 0.4;
     --danger: #ff6b70;
     --danger-soft: rgba(255, 107, 112, 0.14);
     --heat-empty: #282233;
@@ -113,6 +116,9 @@
   --leaf: #4acb88;
   --leaf-soft: rgba(74, 203, 136, 0.16);
   --sun-soft: rgba(255, 200, 69, 0.14);
+  --tick-rim: #4a4062;
+  --tick-shadow: #000;
+  --tick-shadow-a: 0.4;
   --danger: #ff6b70;
   --danger-soft: rgba(255, 107, 112, 0.14);
   --heat-empty: #282233;

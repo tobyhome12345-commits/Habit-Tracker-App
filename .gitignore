@@ -5,5 +5,5 @@ dist/
 .vite/
 coverage/
 *.tsbuildinfo
-# Rendered by `npm run assets` from src/mascot/pip.ts
+# Rendered by `npm run assets` from src/mascot/tick.ts
 assets/*.png
