@@ -1,0 +1,25 @@
+import type { CapacitorConfig } from '@capacitor/cli';
+
+const config: CapacitorConfig = {
+  appId: 'com.habittracker.app',
+  appName: 'Habit Tracker',
+  webDir: 'dist',
+  plugins: {
+    SystemBars: {
+      // Injects --safe-area-inset-* CSS variables so content never hides under the status/nav bars.
+      insetsHandling: 'css',
+      initialViewportFitValueHint: 'cover',
+    },
+    SplashScreen: {
+      launchShowDuration: 600,
+      launchAutoHide: true,
+      showSpinner: false,
+    },
+    LocalNotifications: {
+      smallIcon: 'ic_stat_notify',
+      iconColor: '#7c5cff',
+    },
+  },
+};
+
+export default config;
