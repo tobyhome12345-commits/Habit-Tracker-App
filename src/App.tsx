@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
 import { TabBar, type Tab } from './components/TabBar';
@@ -28,15 +28,14 @@ function Shell() {
   useReminderSync(state, today, ready);
 
   // Android back button: close sheets first, then return to Today, then leave the app.
+  const tabRef = useRef(tab);
+  tabRef.current = tab;
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
     const sub = CapApp.addListener('backButton', () => {
       if (popBack()) return;
-      setTab((t) => {
-        if (t !== 'today') return 'today';
-        CapApp.minimizeApp();
-        return t;
-      });
+      if (tabRef.current !== 'today') setTab('today');
+      else CapApp.minimizeApp();
     });
     return () => {
       sub.then((s) => s.remove());

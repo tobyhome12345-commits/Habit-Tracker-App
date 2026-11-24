@@ -11,8 +11,10 @@ import {
   notificationPermission,
   openExactAlarmSettings,
   requestNotificationPermission,
+  syncReminders,
   type PermissionState,
 } from '../lib/reminders';
+import { todayKey } from '../lib/dates';
 import type { AppState, ThemePref } from '../lib/types';
 
 type Msg = { kind: 'ok' | 'error'; text: string } | null;
@@ -115,7 +117,14 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
                   </span>
                 </div>
                 {perm === 'prompt' && (
-                  <button className="btn btn-soft small" onClick={() => requestNotificationPermission().then(setPerm)}>
+                  <button
+                    className="btn btn-soft small"
+                    onClick={async () => {
+                      const p = await requestNotificationPermission();
+                      setPerm(p);
+                      if (p === 'granted') syncReminders(state, todayKey()).catch(() => {});
+                    }}
+                  >
                     Allow
                   </button>
                 )}
