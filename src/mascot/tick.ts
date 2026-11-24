@@ -157,7 +157,10 @@ function silhouette(color: string, grow: number, mood: TickMood, limbs: boolean)
 function feet(look: Look, mood: TickMood, rim?: string, extra = 0): string {
   const lift = mood === 'celebrate' ? 3 : 0;
   const foot = (x: number, rot: number) =>
-    `<ellipse cx="${x}" cy="${184 - lift}" rx="13" ry="7.5" transform="rotate(${rot} ${x} ${184 - lift})" fill="${rim ?? look.feet}" stroke="${rim ?? INK}" stroke-width="${O + extra}"/>`;
+    rim
+      ? `<ellipse cx="${x}" cy="${184 - lift}" rx="13" ry="7.5" transform="rotate(${rot} ${x} ${184 - lift})" fill="${rim}" stroke="${rim}" stroke-width="${O + extra}"/>`
+      : // Sneakers: currentColor so the app's accent colour can restyle them
+        `<ellipse class="tick-feet" color="${look.feet}" cx="${x}" cy="${184 - lift}" rx="13" ry="7.5" transform="rotate(${rot} ${x} ${184 - lift})" fill="currentColor" stroke="${INK}" stroke-width="${O}"/>`;
   return mood === 'celebrate' ? foot(70, 18) + foot(104, -18) : foot(70, -4) + foot(103, 4);
 }
 
@@ -246,7 +249,7 @@ function sparkles(n: number): string {
   return SPARKLE_SPOTS.slice(0, n)
     .map(
       ([x, y, s], i) =>
-        `<g transform="translate(${x} ${y}) scale(${s})"><path class="tick-sparkle" style="animation-delay:${i * 280}ms" d="M0 -11 Q2.2 -2.2 11 0 Q2.2 2.2 0 11 Q-2.2 2.2 -11 0 Q-2.2 -2.2 0 -11 Z" fill="#ffe066" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/></g>`,
+        `<g transform="translate(${x} ${y}) scale(${s})"><path class="tick-sparkle" style="animation-delay:${i * 280}ms" d="M0 -11 Q2.2 -2.2 11 0 Q2.2 2.2 0 11 Q-2.2 2.2 -11 0 Q-2.2 -2.2 0 -11 Z" color="#ffe066" fill="currentColor" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/></g>`,
     )
     .join('');
 }
@@ -304,7 +307,7 @@ export function tickSvg(opts: TickOptions = {}): string {
   if (glow) defs += `<filter id="${id}-glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="${look.glow === 2 ? 9 : 7}"/></filter>`;
   const [fx0, fy0] = FACE;
   const body =
-    (glow ? `<g class="tick-glow" filter="url(#${id}-glow)" opacity="${look.glow === 2 ? 0.95 : 0.75}">${silhouette('#ffcf4d', look.glow === 2 ? 36 : 28, mood, limbs)}</g>` : '') +
+    (glow ? `<g class="tick-glow" color="#ffcf4d" filter="url(#${id}-glow)" opacity="${look.glow === 2 ? 0.95 : 0.75}">${silhouette('currentColor', look.glow === 2 ? 36 : 28, mood, limbs)}</g>` : '') +
     (opts.rim !== false ? `<g class="tick-rim" color="transparent">${silhouette('currentColor', O * 2 + 9, mood, limbs)}${limbs ? feet(look, mood, 'currentColor', 9) : ''}</g>` : '') +
     (limbs ? feet(look, mood) : '') +
     `<g>${silhouette(INK, O * 2, mood, limbs)}</g><g>${fill}</g>` +

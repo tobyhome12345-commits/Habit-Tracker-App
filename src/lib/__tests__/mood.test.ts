@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { dayContext, isMilestone, tickLevel, tickMessage, tickMood, type DayContext } from '../../mascot/mood';
 import { tickStage } from '../../mascot/tick';
-import { defaultState } from '../storage';
+import { days, mkHabit, mkState } from './fixtures';
 import type { AppState } from '../types';
 
 const today = '2026-11-24';
@@ -13,16 +13,16 @@ const ctx = (done: number, total: number, extra: Partial<DayContext> = {}): DayC
   atRisk: 0,
   atRiskName: '',
   milestone: 0,
+  resting: false,
+  live: total,
   ...extra,
 });
 
-function stateWith(days: Record<string, string[]>): AppState {
-  const s = defaultState();
-  for (const [id, list] of Object.entries(days)) {
-    s.habits.push({ id, name: id, emoji: '⭐', color: '#3dbe7e', createdAt: '2026-01-01' });
-    s.completions[id] = Object.fromEntries(list.map((d) => [d, true as const]));
-  }
-  return s;
+function stateWith(list: Record<string, string[]>): AppState {
+  return mkState(
+    Object.keys(list).map((id) => mkHabit(id)),
+    Object.fromEntries(Object.entries(list).map(([id, ds]) => [id, days(...ds)])),
+  );
 }
 
 describe('tickMood', () => {
@@ -59,6 +59,16 @@ describe('dayContext', () => {
       b: ['2026-11-18', '2026-11-19', '2026-11-20', '2026-11-21', '2026-11-22', '2026-11-23', '2026-11-24'], // hits 7 today
     });
     expect(dayContext(s, today, 9)).toMatchObject({ done: 1, total: 2, atRisk: 4, atRiskName: 'a', milestone: 7 });
+  });
+  it('counts only habits due today', () => {
+    const s = mkState([mkHabit('a'), mkHabit('b', { schedule: { kind: 'weekdays', days: [3] } })], { a: days(today) });
+    expect(dayContext(s, today, 9)).toMatchObject({ done: 1, total: 1, live: 2 });
+  });
+  it('rests in vacation mode', () => {
+    const s = mkState([mkHabit('a')], {}, [{ from: today, to: null }]);
+    const c = dayContext(s, today, 9);
+    expect(c.resting).toBe(true);
+    expect(tickMessage(c, tickMood(c))).toMatch(/streaks/i);
   });
   it('has nothing at risk when the streaks are already done today', () => {
     const s = stateWith({ a: ['2026-11-22', '2026-11-23', '2026-11-24'] });

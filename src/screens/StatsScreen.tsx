@@ -3,8 +3,9 @@ import { ArrowDownRight, ArrowUpRight, ChevronLeft, ChevronRight, Minus } from '
 import { useStore } from '../lib/store';
 import { alpha } from '../lib/colors';
 import { formatDate } from '../lib/dates';
-import { dailySeries, habitPeriodStats, overallStats, periodFor, shiftPeriod, type PeriodKind } from '../lib/stats';
-import { bestStreak, currentStreak, totalDone } from '../lib/streaks';
+import { dailySeries, habitPeriodStats, overallStats, periodFor, shiftPeriod, statHabits, type PeriodKind } from '../lib/stats';
+import { bestStreak, currentStreak, streakLabel, totalDone } from '../lib/streaks';
+import { ruleOn, scheduleLabel } from '../lib/schedule';
 import { Tick } from '../components/Tick';
 import { tickLevel } from '../mascot/mood';
 import type { TickMood } from '../mascot/tick';
@@ -18,7 +19,8 @@ const pct = (r: number | null) => (r === null ? '—' : `${Math.round(r * 100)}%
 
 export function StatsScreen({ today }: Props) {
   const { state } = useStore();
-  const { habits, completions, settings } = state;
+  const { settings } = state;
+  const habits = statHabits(state);
   const [kind, setKind] = useState<PeriodKind>('week');
   const [offset, setOffset] = useState(0); // 0 = current period, -1 = previous, …
   const [picked, setPicked] = useState<DateKey | null>(null);
@@ -27,22 +29,22 @@ export function StatsScreen({ today }: Props) {
   const period = shiftPeriod(kind, current, offset, settings.weekStart);
   const prev = shiftPeriod(kind, period, -1, settings.weekStart);
 
-  const series = useMemo(() => dailySeries(habits, completions, period, today), [habits, completions, period.start, period.end, today]);
-  const overall = overallStats(series);
-  const prevOverall = overallStats(dailySeries(habits, completions, prev, today));
+  const series = useMemo(() => dailySeries(habits, state, period, today), [state, period.start, period.end, today]); // eslint-disable-line react-hooks/exhaustive-deps
+  const overall = overallStats(habits, state, period, today, series);
+  const prevOverall = overallStats(habits, state, prev, today, dailySeries(habits, state, prev, today));
   const delta = overall.rate !== null && prevOverall.rate !== null ? Math.round((overall.rate - prevOverall.rate) * 100) : null;
 
   const perHabit = habits
     .map((h) => ({
       habit: h,
-      stats: habitPeriodStats(h, completions, period, today),
-      streak: currentStreak(completions[h.id], today),
-      best: bestStreak(completions[h.id], today),
-      total: totalDone(completions[h.id], today),
+      stats: habitPeriodStats(h, state, period, today),
+      streak: currentStreak(h, state, today),
+      best: bestStreak(h, state, today),
+      total: totalDone(h, state, today),
     }))
     .sort((a, b) => (b.stats.rate ?? -1) - (a.stats.rate ?? -1));
 
-  const topStreak = perHabit.reduce<(typeof perHabit)[number] | null>((m, x) => (!m || x.streak > m.streak ? x : m), null);
+  const topStreak = perHabit.reduce<(typeof perHabit)[number] | null>((m, x) => (!m || x.streak.count > m.streak.count ? x : m), null);
 
   const periodLabel =
     kind === 'week'
@@ -162,8 +164,12 @@ export function StatsScreen({ today }: Props) {
         </div>
         <div className="tile card">
           <span className="tile-label">Top streak</span>
-          <span className="tile-value">🔥 {topStreak?.streak ?? 0}</span>
-          <span className="tile-sub ellipsis">{topStreak && topStreak.streak > 0 ? `${topStreak.habit.emoji} ${topStreak.habit.name}` : 'Start one today!'}</span>
+          <span className="tile-value">🔥 {topStreak?.streak.count ?? 0}</span>
+          <span className="tile-sub ellipsis">
+            {topStreak && topStreak.streak.count > 0
+              ? `${topStreak.streak.unit === 'day' ? '' : `${streakLabel(topStreak.streak.count, topStreak.streak.unit).replace(/^\d+ /, '')} · `}${topStreak.habit.emoji} ${topStreak.habit.name}`
+              : 'Start one today!'}
+          </span>
         </div>
       </div>
 
@@ -233,7 +239,10 @@ export function StatsScreen({ today }: Props) {
             </span>
             <div className="hs-main">
               <div className="hs-top">
-                <span className="hs-name">{h.name}</span>
+                <span className="hs-name">
+                  {h.name}
+                  <small>{scheduleLabel(ruleOn(h, today).schedule, settings.weekStart)}</small>
+                </span>
                 <span className="hs-pct">{pct(stats.rate)}</span>
               </div>
               <div
@@ -249,13 +258,13 @@ export function StatsScreen({ today }: Props) {
               </div>
               <div className="hs-meta">
                 {stats.rate === null ? (
-                  <span>Not started yet</span>
+                  <span>Nothing due yet</span>
                 ) : (
                   <span>
-                    {stats.done}/{stats.possible} days
+                    {stats.done}/{stats.possible} {stats.weekly ? 'check-ins' : ruleOn(h, today).schedule.kind === 'daily' ? 'days' : 'scheduled days'}
                   </span>
                 )}
-                <span>🔥 {streak}</span>
+                <span>🔥 {streakLabel(streak.count, streak.unit)}</span>
                 <span>🏆 {best}</span>
                 <span>✅ {total} total</span>
               </div>

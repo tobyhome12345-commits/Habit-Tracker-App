@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Capacitor, SystemBars, SystemBarsStyle } from '@capacitor/core';
+import { accentTokens } from './colors';
 import type { ThemePref } from './types';
 
-/** Applies the theme to <html> and the Android status/navigation bar icons. */
-export function useThemeSync(theme: ThemePref) {
+/** Applies the theme + accent colour to <html> and the Android status/navigation bar icons. */
+export function useThemeSync(theme: ThemePref, accent: string | null = null) {
   const [systemDark, setSystemDark] = useState(() => window.matchMedia('(prefers-color-scheme: dark)').matches);
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
@@ -22,4 +23,17 @@ export function useThemeSync(theme: ThemePref) {
       SystemBars.setStyle({ style: dark ? SystemBarsStyle.Dark : SystemBarsStyle.Light }).catch(() => {});
     }
   }, [theme, dark]);
+
+  // Accent: CSS variables on <html> override the theme's defaults (Classic = none).
+  useEffect(() => {
+    const root = document.documentElement;
+    const keys = Object.keys(accentTokens('#000000', false));
+    for (const k of keys) root.style.removeProperty(k);
+    if (!accent) {
+      delete root.dataset.accent;
+      return;
+    }
+    root.dataset.accent = '';
+    for (const [k, v] of Object.entries(accentTokens(accent, dark))) root.style.setProperty(k, v);
+  }, [accent, dark]);
 }

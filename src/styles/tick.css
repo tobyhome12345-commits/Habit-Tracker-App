@@ -23,6 +23,16 @@
   opacity: var(--tick-shadow-a, 0.13);
 }
 
+/* Accent colour: Tick's sneakers (from Fresh up), glow and sparkles follow it */
+:root[data-accent] .tick:not(.tick--stage-0) .tick-feet {
+  color: var(--tick-shoe);
+}
+
+:root[data-accent] .tick .tick-glow,
+:root[data-accent] .tick .tick-sparkle {
+  color: var(--tick-glow);
+}
+
 /* Idle: a little bounce */
 .tick .tick-bounce {
   transform-origin: 88px 192px;

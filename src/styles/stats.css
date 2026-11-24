@@ -295,3 +295,11 @@
   font-weight: 600;
   color: var(--text);
 }
+
+.hs-name small {
+  margin-left: 8px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-3);
+}

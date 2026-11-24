@@ -1,4 +1,5 @@
-import { currentStreak } from '../lib/streaks';
+import { liveHabits, todayInfo } from '../lib/schedule';
+import { currentStreak, streakDays } from '../lib/streaks';
 import type { AppState, DateKey } from '../lib/types';
 import { tickStage, type TickMood, type TickStage } from './tick';
 
@@ -7,6 +8,9 @@ export const MILESTONES = [3, 7, 14, 21, 30, 50, 75, 100, 150, 200, 365];
 export function isMilestone(streak: number): boolean {
   return MILESTONES.includes(streak);
 }
+
+/** These get the big, full-screen celebration (the rest get a small toast). */
+export const BIG_MILESTONES = [7, 30, 100, 365];
 
 /** A streak this long, still unticked by this hour, counts as "at risk". */
 export const AT_RISK_STREAK = 3;
@@ -23,6 +27,10 @@ export interface DayContext {
   atRiskName: string;
   /** A streak milestone hit today (0 if none). */
   milestone: number;
+  /** Every habit is on a break today (vacation mode or all paused). */
+  resting: boolean;
+  /** Habits that aren't archived. */
+  live: number;
 }
 
 /** How Tick feels about your day. */
@@ -57,7 +65,9 @@ export function greeting(hour: number): string {
 export function tickMessage(c: DayContext, mood: TickMood): string {
   const left = c.total - c.done;
   const seed = c.today + mood + left;
-  if (c.total === 0) return 'Hi, I’m Tick! Give me something to check off 👋';
+  if (c.live === 0) return 'Hi, I’m Tick! Give me something to check off 👋';
+  if (c.resting) return pick(['Day off! Your streaks are safe with me 🏖️', 'Rest mode. I’m guarding your streaks 😎'], seed);
+  if (c.total === 0) return pick(['Nothing due today. Enjoy the free day 😎', 'Day off from habits! I’ll be right here ✓'], seed);
   switch (mood) {
     case 'celebrate':
       return pick(['ALL DONE?! I’m literally jumping 🎉', 'Every box ticked. Show-off 😏', 'Perfect day! Tick-tastic ✓✓✓', 'Clean sweep! Take a bow 🙌'], seed);
@@ -82,16 +92,23 @@ export function tickMessage(c: DayContext, mood: TickMood): string {
   }
 }
 
+/** Today's numbers for Tick: only habits due today (or already done today) count. */
 export function dayContext(state: AppState, today: DateKey, hour: number): DayContext {
   let done = 0;
+  let total = 0;
   let atRisk = 0;
   let atRiskName = '';
   let milestone = 0;
-  for (const h of state.habits) {
-    const d = state.completions[h.id];
-    // currentStreak counts from yesterday when today isn't done yet
-    const streak = currentStreak(d, today);
-    if (d?.[today]) {
+  let paused = 0;
+  const live = liveHabits(state, today);
+  for (const h of live) {
+    const info = todayInfo(h, state, today);
+    if (info.kind === 'paused') paused++;
+    if (info.kind !== 'due' && info.kind !== 'done') continue;
+    total++;
+    // Counts back from the last finished slot when today isn't done yet
+    const streak = currentStreak(h, state, today).count;
+    if (info.kind === 'done') {
       done++;
       if (isMilestone(streak)) milestone = Math.max(milestone, streak);
     } else if (streak > atRisk) {
@@ -99,7 +116,7 @@ export function dayContext(state: AppState, today: DateKey, hour: number): DayCo
       atRiskName = h.name;
     }
   }
-  return { done, total: state.habits.length, hour, today, atRisk, atRiskName, milestone };
+  return { done, total, hour, today, atRisk, atRiskName, milestone, resting: live.length > 0 && paused === live.length, live: live.length };
 }
 
 export const LEVEL_STEPS = [3, 7, 14, 30];
@@ -115,9 +132,9 @@ export interface Level {
   next: number | null;
 }
 
-/** Tick levels up with your best current streak across all habits. */
+/** Tick levels up with your longest active streak (in days, so every schedule counts fairly). */
 export function tickLevel(state: AppState, today: DateKey): Level {
   let best = 0;
-  for (const h of state.habits) best = Math.max(best, currentStreak(state.completions[h.id], today));
+  for (const h of liveHabits(state, today)) best = Math.max(best, streakDays(currentStreak(h, state, today), today));
   return { stage: tickStage(best), best, next: LEVEL_STEPS.find((s) => s > best) ?? null };
 }

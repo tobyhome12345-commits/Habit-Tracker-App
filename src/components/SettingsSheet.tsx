@@ -3,6 +3,8 @@ import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
 import { Download, Trash2, Upload, X } from 'lucide-react';
 import { Tick } from './Tick';
+import { AccentPicker } from './AccentPicker';
+import { HabitSettings } from './HabitSettings';
 import { Sheet } from './Sheet';
 import { useStore } from '../lib/store';
 import { defaultState } from '../lib/storage';
@@ -63,6 +65,8 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
                 </button>
               ))}
             </div>
+            <p className="field-label">Accent colour</p>
+            <AccentPicker />
             <p className="field-label">Week starts on</p>
             <div className="segmented" role="radiogroup" aria-label="Week starts on">
               {([1, 0] as const).map((d) => (
@@ -77,6 +81,9 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
                 </button>
               ))}
             </div>
+
+            <p className="section-title">Habits</p>
+            <HabitSettings />
 
             <p className="section-title">Your data</p>
             <p className="settings-note top">

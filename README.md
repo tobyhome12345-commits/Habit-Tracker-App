@@ -19,16 +19,57 @@ A free, offline habit tracker for Android: no ads, no account, no subscription. 
 
 ## Features
 
-- **Habits your way**: name, emoji (pick one or type any emoji) and colour from a 10-tone garden palette.
-- **Daily check-off**: a big tap target with a check that draws itself in, a 🔥 **current streak**, a 🏆 **best streak**, and confetti when you finish the day.
-- **Streak milestones** at 3, 7, 14, 21, 30, 50, 100… days.
-- **Fix missed days** by tapping any day in the 7-day strip or the calendar.
-- **Calendar + heatmap**: a month view where streaks join into pills, plus a 22-week heatmap, for one habit or all of them.
-- **Weekly & monthly stats**: completion %, change vs the last period, check-ins, perfect days, a daily bar chart and a per-habit leaderboard.
-- **Works offline.** Data is saved on the device, with **Export / Import** backups.
+**Habits your way**
+- Name, emoji (pick one or type any) and colour from a 10-tone palette.
+- **Daily goals**: a simple check, or a target you tap towards, like 💧 8 glasses or 📚 10 pages. Each tap fills a progress ring, there's a − button for mistakes, and you can add an optional unit.
+- **Flexible schedules**: every day, specific days (Mon · Wed · Fri), every X days, or X times a week on any days.
+- **Time of day**: Morning, Afternoon, Evening or Anytime. Today groups your habits that way.
+- All the advanced options live in the add/edit sheet, folded into three tidy rows.
+
+**Today**
+- Tap to check off. You get a 🔥 **current streak**, a 🏆 **best streak**, and confetti when you finish the day.
+- Habits that aren't due today move to a dimmed **"Not today"** section, with a reason like "Next: Wed" or "3/3 this week ✓".
+- **Hold and drag** a habit to reorder it.
+- After a check-off, a snackbar lets you **add a note** or **undo**.
+- **Big celebrations** at 7, 30 and 100-day streaks, and smaller ones along the way.
+
+**Streaks & stats that understand schedules**
+- Skipped (unscheduled) days and paused days **never break a streak**. Only scheduled days count towards your completion %.
+- Today never counts against you until it's over.
+- "X times a week" habits keep weekly streaks and are judged on their weekly goal.
+- Changing a habit's goal or schedule only applies from that day on. Your past streaks stay as they were.
+
+**Calendar + heatmap**
+- A month view for one habit or all of them, plus a 22-week heatmap.
+- Tap any day to fix it, change its count or add a **note**. Days with notes get a dot.
+
+**Weekly & monthly stats**
+- Completion %, change vs the last period, check-ins and perfect days.
+- A daily bar chart, and a per-habit list with each habit's schedule.
+
+**Pause & archive**
+- Pause one habit for a sick day, or turn on **🏖️ vacation mode** to pause everything. Both take an optional end date, and your streaks are frozen while paused.
+- **Archive** habits you're done with. They keep their history and you can restore them anytime from Settings.
+
+**Make it yours**
+- Pick an **accent colour** for the whole app: 9 presets, or any custom colour.
+- It recolours buttons, the tab bar, highlights and charts, plus Tick's glow and sneakers.
+- Every colour is contrast-checked so text stays readable in light and dark mode.
+
+**Your data**
+- Works **offline**, with everything saved on the device.
+- **Export / Import** backups include everything: goals, schedules, counts, notes, pauses, archive, order and accent.
 - **Light, dark or automatic theme**, built for phones. Respects "reduce motion".
 
-<img src="docs/screenshots/calendar.png" width="420" alt="Calendar view"> <img src="docs/screenshots/stats.png" width="420" alt="Stats view">
+<img src="docs/screenshots/habit-sheet.png" width="860" alt="Habit sheet: several times a day, certain days, every few days, times a week, manage">
+
+<img src="docs/screenshots/today-interactions.png" width="860" alt="Counted habit, note, drag to reorder and the 7-day celebration">
+
+<img src="docs/screenshots/calendar-stats.png" width="860" alt="Calendar with notes and schedules, weekly and monthly stats">
+
+<img src="docs/screenshots/accent.png" width="760" alt="Accent colour picker and the app in Plum, Sky and a custom colour">
+
+<img src="docs/screenshots/vacation.png" width="640" alt="Vacation mode and archived habits">
 
 <img src="docs/screenshots/icon-splash.png" width="700" alt="App icon, themed icon and splash screens">
 
@@ -50,6 +91,8 @@ A free, offline habit tracker for Android: no ads, no account, no subscription. 
 - **React + TypeScript + Vite** web app, wrapped as a native Android app with **Capacitor 8**.
 - **Design system:** "Garden notebook". Warm paper + ink by day, a night garden in dark mode. Fredoka + Nunito fonts (bundled, so they work offline). Tokens live in `src/styles/global.css`.
 - **Tick** is drawn in code: `src/mascot/tick.ts` returns his SVG for any pose and level. `src/mascot/mood.ts` decides his mood, messages, level and milestones (all unit-tested).
+- **Schedules:** `src/lib/schedule.ts` is the one place that decides whether a day is scheduled, paused or met. Streaks (`streaks.ts`), stats (`stats.ts`), Today, Calendar and Tick all use it.
+- **Data model (v2):** each habit keeps versioned rules (`{ since, target, schedule }`), so edits never rewrite history. It also stores taps per day, notes, pauses, an archive date and an order. Old v1 saves and backups migrate automatically (`normalizeState` in `src/lib/storage.ts`).
 - Storage: `@capacitor/preferences`, on the device, no server.
 - **GitHub Actions** (`.github/workflows/build-apk.yml`) runs the tests and builds a signed APK on every push, then publishes it as a GitHub Release.
 - The APK is signed with `android/app/habit-tracker.keystore`. It's committed on purpose, so every build has the same signature and updates install cleanly. It's a personal sideloading key, not a Play Store key.
@@ -59,7 +102,7 @@ A free, offline habit tracker for Android: no ads, no account, no subscription. 
 ```bash
 npm install
 npm run dev        # web preview at http://localhost:5173
-npm test           # unit tests (dates, streaks, stats, storage, Tick's moods + artwork)
+npm test           # unit tests (schedules, streaks, stats, storage + migration, colours, Tick)
 npm run build      # production web build
 npm run assets     # re-render app icon + splash images from Tick's SVG
 npx cap sync android

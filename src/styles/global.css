@@ -162,7 +162,8 @@ button {
   touch-action: manipulation;
 }
 
-input {
+input,
+textarea {
   font: inherit;
   color: inherit;
 }
