@@ -19,3 +19,18 @@ export function useToday(): string {
   }, []);
   return today;
 }
+
+/** Current hour (0–23), refreshed every minute and when the app returns to the foreground. */
+export function useHour(): number {
+  const [hour, setHour] = useState(() => new Date().getHours());
+  useEffect(() => {
+    const check = () => setHour(new Date().getHours());
+    const timer = setInterval(check, 60_000);
+    document.addEventListener('visibilitychange', check);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', check);
+    };
+  }, []);
+  return hour;
+}

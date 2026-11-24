@@ -1,0 +1,146 @@
+/* Pip's animations: transforms + opacity only, all switched off by prefers-reduced-motion (global.css). */
+.pip-wrap {
+  display: inline-block;
+  line-height: 0;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.pip-wrap svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  display: block;
+}
+
+.pip .pip-all {
+  transform-origin: 100px 188px;
+  animation: pip-breathe 3.4s ease-in-out infinite;
+}
+
+@keyframes pip-breathe {
+  50% {
+    transform: scale(1.025, 0.975);
+  }
+}
+
+.pip .pip-eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pip-blink 5.2s infinite;
+}
+
+@keyframes pip-blink {
+  0%,
+  91%,
+  100% {
+    transform: scaleY(1);
+  }
+  94% {
+    transform: scaleY(0.1);
+  }
+}
+
+.pip .pip-sprout {
+  transform-origin: 100px 70px;
+  animation: pip-sway 3.8s ease-in-out infinite;
+}
+
+.pip--sleepy .pip-sprout {
+  animation-duration: 6s;
+}
+
+@keyframes pip-sway {
+  0%,
+  100% {
+    transform: rotate(-4deg);
+  }
+  50% {
+    transform: rotate(4deg);
+  }
+}
+
+.pip .pip-wave {
+  transform-origin: 148px 126px;
+  animation: pip-wave 0.55s ease-in-out infinite alternate;
+}
+
+@keyframes pip-wave {
+  from {
+    transform: rotate(-12deg);
+  }
+  to {
+    transform: rotate(18deg);
+  }
+}
+
+.pip--celebrate .pip-hop {
+  transform-origin: 100px 188px;
+  animation: pip-hop 0.75s cubic-bezier(0.3, 1.4, 0.5, 1) 4;
+}
+
+.pip--celebrate .pip-shadow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pip-shadow 0.75s ease 4;
+}
+
+@keyframes pip-hop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  45% {
+    transform: translateY(-16px);
+  }
+}
+
+@keyframes pip-shadow {
+  45% {
+    transform: scale(0.72);
+    opacity: 0.55;
+  }
+}
+
+.pip .pip-sparkle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pip-twinkle 1.5s ease-in-out infinite;
+}
+
+@keyframes pip-twinkle {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.55) rotate(25deg);
+    opacity: 0.6;
+  }
+}
+
+.pip .pip-z {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pip-z 2.6s ease-in-out infinite;
+}
+
+@keyframes pip-z {
+  0% {
+    opacity: 0;
+    transform: translate(-4px, 6px) scale(0.6);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(6px, -10px) scale(1.1);
+  }
+}
+
+.pip-wrap.still *,
+.pip-wrap.still {
+  animation: none !important;
+}

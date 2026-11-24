@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
-import { Bell, BellOff, Clock, Download, Heart, Trash2, Upload, X } from 'lucide-react';
+import { Bell, BellOff, Clock, Download, Trash2, Upload, X } from 'lucide-react';
+import { Pip } from './Pip';
 import { Sheet } from './Sheet';
 import { useStore } from '../lib/store';
 import { defaultState } from '../lib/storage';
@@ -194,11 +195,11 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
             </button>
 
             <div className="about">
-              <Heart size={18} />
+              <Pip mood="happy" stage={4} size={56} still />
               <p>
                 <b>Habit Tracker</b> {version}
                 <br />
-                Free forever. No ads, no account, no subscription.
+                Grown with love by Pip 🌱 Free forever. No ads, no account, no subscription.
               </p>
             </div>
           </div>

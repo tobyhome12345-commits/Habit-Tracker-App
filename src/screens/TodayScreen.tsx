@@ -6,27 +6,26 @@ import { successHaptic, tapHaptic } from '../lib/haptics';
 import { HabitCard } from '../components/HabitCard';
 import { ProgressRing } from '../components/ProgressRing';
 import { Confetti } from '../components/Confetti';
+import { Pip } from '../components/Pip';
+import { GROW_PHRASES, dayContext, greeting, pipGrowth, pipMessage, pipMood } from '../mascot/mood';
 import type { DateKey, Habit } from '../lib/types';
 
 interface Props {
   today: DateKey;
+  hour: number;
   onAdd: () => void;
   onEdit: (h: Habit) => void;
   onSettings: () => void;
+  onChecked: (habit: Habit, date: DateKey) => void;
 }
 
-function summary(done: number, total: number) {
-  if (done === total) return { title: 'Perfect day! 🎉', sub: 'Every habit done. Absolute legend.' };
-  if (done === 0) return { title: 'Let’s get rolling 🚀', sub: `${total} habit${total === 1 ? '' : 's'} waiting for you` };
-  const left = total - done;
-  return { title: 'Nice, keep going! 💪', sub: `Just ${left} more to go today` };
-}
-
-export function TodayScreen({ today, onAdd, onEdit, onSettings }: Props) {
+export function TodayScreen({ today, hour, onAdd, onEdit, onSettings, onChecked }: Props) {
   const { state, dispatch } = useStore();
   const { habits, completions } = state;
-  const doneCount = habits.filter((h) => completions[h.id]?.[today]).length;
-  const allDone = habits.length > 0 && doneCount === habits.length;
+  const ctx = dayContext(state, today, hour);
+  const mood = pipMood(ctx);
+  const growth = pipGrowth(state, today);
+  const allDone = habits.length > 0 && ctx.done === habits.length;
 
   // Confetti when the last habit of the day gets ticked (not on first render).
   const [burst, setBurst] = useState(0);
@@ -41,62 +40,101 @@ export function TodayScreen({ today, onAdd, onEdit, onSettings }: Props) {
       const wasDone = !!state.completions[id]?.[date];
       dispatch({ type: 'toggle', id, date });
       if (wasDone) return;
+      const habit = habits.find((h) => h.id === id);
+      if (habit) onChecked(habit, date);
       const willAllBeDone = date === today && habits.every((h) => h.id === id || state.completions[h.id]?.[today]);
       if (willAllBeDone) successHaptic();
       else tapHaptic();
     },
-    [dispatch, habits, state.completions, today],
+    [dispatch, habits, state.completions, today, onChecked],
   );
 
-  const s = summary(doneCount, habits.length);
+  const header = (
+    <header className="screen-header">
+      <div>
+        <p className="subtitle">
+          {greeting(hour)} · {formatDate(today, { weekday: 'short', month: 'short', day: 'numeric' })}
+        </p>
+        <h1>Today</h1>
+      </div>
+      <div className="header-actions">
+        {habits.length > 0 && (
+          <button className="icon-btn primary" aria-label="New habit" onClick={onAdd}>
+            <Plus size={24} strokeWidth={2.6} />
+          </button>
+        )}
+        <button className="icon-btn" aria-label="Settings" onClick={onSettings}>
+          <Settings size={21} />
+        </button>
+      </div>
+    </header>
+  );
+
+  if (habits.length === 0) {
+    return (
+      <main className="screen">
+        {header}
+        <section className="card empty hello">
+          <div className="hello-art">
+            <Pip mood="wave" size={156} label="Pip the seed sprout, waving hello" />
+          </div>
+          <h2>Hi, I’m Pip!</h2>
+          <p>I’m a little seed who grows when you keep your habits. Plant your first one and let’s start a streak together.</p>
+          <button className="btn btn-primary" onClick={onAdd}>
+            <Plus size={20} strokeWidth={2.6} /> Plant your first habit
+          </button>
+        </section>
+      </main>
+    );
+  }
 
   return (
-    <main className={`screen${habits.length ? ' has-fab' : ''}`}>
-      <header className="screen-header">
-        <div>
-          <p className="subtitle">{formatDate(today, { weekday: 'long', month: 'long', day: 'numeric' })}</p>
-          <h1>Today</h1>
-        </div>
-        <button className="icon-btn" aria-label="Settings" onClick={onSettings}>
-          <Settings size={22} />
-        </button>
-      </header>
+    <main className="screen">
+      {header}
 
-      {habits.length === 0 ? (
-        <div className="card empty">
-          <div className="empty-art">🌱</div>
-          <h2>Start your first habit</h2>
-          <p>Small things, done daily, add up to big things. What do you want to build?</p>
-          <button className="btn btn-primary" onClick={onAdd}>
-            <Plus size={20} strokeWidth={2.6} /> Add a habit
-          </button>
-        </div>
-      ) : (
-        <>
-          <section className={`summary card${allDone ? ' all-done' : ''}`} aria-live="polite">
-            <ProgressRing value={doneCount / habits.length} color={allDone ? 'var(--success)' : 'var(--accent)'}>
-              <strong>{doneCount}</strong>
-              <span>/{habits.length}</span>
+      <section className={`hero card mood-${mood}`} aria-live="polite">
+        <div className="hero-main">
+          <div className="hero-art">
+            <ProgressRing value={ctx.done / habits.length} size={124} stroke={9} color="var(--leaf)">
+              <Pip mood={mood} stage={growth.stage} size={94} label={`Pip is ${mood === 'celebrate' ? 'celebrating' : mood === 'encourage' ? 'cheering you on' : mood}`} />
             </ProgressRing>
-            <div className="summary-text">
-              <h2>{s.title}</h2>
-              <p>{s.sub}</p>
-            </div>
             {burst > 0 && <Confetti key={burst} />}
-          </section>
-
-          <div className="habit-list">
-            {habits.map((h) => (
-              <HabitCard key={h.id} habit={h} done={completions[h.id]} today={today} onToggle={onToggle} onEdit={onEdit} />
-            ))}
           </div>
-          <p className="hint">Tap a habit to edit it · tap a day in the strip to fix a missed one</p>
+          <div className="hero-text">
+            <p className="bubble">{pipMessage(ctx, mood)}</p>
+            <p className="hero-count">
+              <strong>{ctx.done}</strong> of {habits.length} done
+            </p>
+          </div>
+        </div>
+        <div className="growth">
+          {growth.next !== null ? (
+            <>
+              <span className="growth-label">
+                Pip {GROW_PHRASES[growth.stage + 1]} at a <b>{growth.next}-day</b> streak
+              </span>
+              <span className="growth-bar" aria-hidden="true">
+                <i style={{ width: `${Math.min(100, (growth.best / growth.next) * 100)}%` }} />
+              </span>
+              <span className="growth-num">
+                {growth.best}/{growth.next}
+              </span>
+            </>
+          ) : (
+            <span className="growth-label">🌸 Full bloom! Keep that {growth.best}-day streak going</span>
+          )}
+        </div>
+      </section>
 
-          <button className="fab" onClick={onAdd} aria-label="New habit">
-            <Plus size={28} strokeWidth={2.6} />
-          </button>
-        </>
-      )}
+      <div className="habit-list">
+        {habits.map((h) => (
+          <HabitCard key={h.id} habit={h} done={completions[h.id]} today={today} onToggle={onToggle} onEdit={onEdit} />
+        ))}
+      </div>
+      <button className="add-card" onClick={onAdd}>
+        <Plus size={20} strokeWidth={2.6} /> Add a habit
+      </button>
+      <p className="hint">Tap a habit to edit it · tap a day in the strip to fix a missed one</p>
     </main>
   );
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Bell, Check, Trash2, X } from 'lucide-react';
 import { Sheet } from './Sheet';
-import { HABIT_COLORS, alpha, onColor } from '../lib/colors';
+import { DEFAULT_HABIT_COLOR, HABIT_COLORS, alpha, onColor } from '../lib/colors';
 import { EMOJIS, QUICK_PICKS, firstGrapheme } from '../lib/emojis';
 import { useStore } from '../lib/store';
 import { remindersSupported, requestNotificationPermission } from '../lib/reminders';
@@ -16,7 +16,7 @@ export function HabitSheet({ habit, onClose }: Props) {
   const { dispatch } = useStore();
   const [name, setName] = useState(habit?.name ?? '');
   const [emoji, setEmoji] = useState(habit?.emoji ?? '💧');
-  const [color, setColor] = useState(habit?.color ?? HABIT_COLORS[0].value);
+  const [color, setColor] = useState(habit?.color ?? DEFAULT_HABIT_COLOR);
   const [reminderOn, setReminderOn] = useState(habit?.reminder.enabled ?? false);
   const [time, setTime] = useState(habit?.reminder.time ?? '20:00');
   const [customEmoji, setCustomEmoji] = useState('');
@@ -152,7 +152,7 @@ export function HabitSheet({ habit, onClose }: Props) {
                 </span>
                 <div className="setting-text">
                   <span className="setting-title">Daily reminder</span>
-                  <span className="setting-sub">{reminderOn ? 'We’ll nudge you every day' : 'Off'}</span>
+                  <span className="setting-sub">{reminderOn ? 'Pip will nudge you every day 🌱' : 'Off'}</span>
                 </div>
                 <button
                   className={`switch${reminderOn ? ' on' : ''}`}

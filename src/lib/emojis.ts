@@ -7,12 +7,12 @@ export const EMOJIS = [
 ];
 
 export const QUICK_PICKS = [
-  { name: 'Drink water', emoji: '💧', color: '#0ea5e9' },
-  { name: 'Read 10 pages', emoji: '📚', color: '#f59e0b' },
-  { name: 'Exercise', emoji: '🏃', color: '#22c55e' },
-  { name: 'Meditate', emoji: '🧘', color: '#8b5cf6' },
-  { name: 'Sleep by 10pm', emoji: '😴', color: '#3b82f6' },
-  { name: 'Practice guitar', emoji: '🎸', color: '#f43f5e' },
+  { name: 'Drink water', emoji: '💧', color: '#3aa5f2' },
+  { name: 'Read 10 pages', emoji: '📚', color: '#f5b52e' },
+  { name: 'Exercise', emoji: '🏃', color: '#3dbe7e' },
+  { name: 'Meditate', emoji: '🧘', color: '#a970f0' },
+  { name: 'Sleep by 10pm', emoji: '😴', color: '#6f7cf7' },
+  { name: 'Practice guitar', emoji: '🎸', color: '#ff6b5b' },
 ];
 
 /** First user-perceived character of a string (handles multi-codepoint emoji). */

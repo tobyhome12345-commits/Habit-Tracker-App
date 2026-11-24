@@ -2,6 +2,7 @@ import { Capacitor } from '@capacitor/core';
 import { LocalNotifications, type LocalNotificationSchema } from '@capacitor/local-notifications';
 import { addDays, fromKey } from './dates';
 import { currentStreak } from './streaks';
+import { pipReminder } from '../mascot/mood';
 import type { AppState, DateKey } from './types';
 
 export const remindersSupported = Capacitor.isNativePlatform();
@@ -10,14 +11,6 @@ const CHANNEL = 'habit-reminders';
 /** Android caps an app at ~500 pending alarms; stay well under it. */
 const MAX_PENDING = 400;
 const MAX_DAYS = 30;
-
-const NUDGES = [
-  'Tiny step, big win. You’ve got this! 💪',
-  'Future you says thanks 🙌',
-  'Quick one before the day ends? ⏰',
-  'Keep the momentum going 🚀',
-  'Small habits, big results ✨',
-];
 
 export type PermissionState = 'granted' | 'denied' | 'prompt' | 'unsupported';
 
@@ -91,14 +84,17 @@ export async function syncReminders(state: AppState, today: DateKey): Promise<vo
       const at = fromKey(day);
       at.setHours(hh, mm, 0, 0);
       if (at.getTime() <= now + 30_000) continue;
+      // Streak that a reminder on day i protects: today's live streak, or (for later days) unknown → 0.
       const streak = i === 0 ? currentStreak(done, today) : 0;
+      const content = pipReminder(hh, streak, i + h.name.length);
       notifications.push({
         id: id++,
         title: `${h.emoji} ${h.name}`,
-        body: streak > 1 ? `Keep your ${streak}-day streak alive! 🔥` : NUDGES[(i + h.name.length) % NUDGES.length],
+        body: content.body,
+        largeIcon: content.largeIcon,
         channelId: CHANNEL,
         smallIcon: 'ic_stat_notify',
-        iconColor: h.color,
+        iconColor: '#f5a524',
         autoCancel: true,
         schedule: { at, allowWhileIdle: true },
         extra: { habitId: h.id },

@@ -22,6 +22,11 @@ describe('reducer', () => {
 });
 
 describe('normalizeState', () => {
+  it('maps the old palette onto the garden palette', () => {
+    const s = normalizeState({ habits: [{ id: 'a', color: '#8B5CF6' }, { id: 'b', color: '#123456' }] });
+    expect(s.habits.map((h) => h.color)).toEqual(['#a970f0', '#123456']);
+  });
+
   it('rejects junk', () => {
     expect(() => normalizeState({ foo: 1 })).toThrow();
     expect(() => normalizeState('hello')).toThrow();
@@ -33,7 +38,7 @@ describe('normalizeState', () => {
       completions: { x: { '2026-01-02': true, bad: true }, ghost: { '2026-01-02': true } },
       settings: { theme: 'dark', weekStart: 0 },
     });
-    expect(s.habits[0]).toMatchObject({ id: 'x', name: 'Run', color: '#8b5cf6', emoji: '⭐' });
+    expect(s.habits[0]).toMatchObject({ id: 'x', name: 'Run', color: '#3dbe7e', emoji: '⭐' });
     expect(s.completions).toEqual({ x: { '2026-01-02': true } });
     expect(s.settings).toEqual({ theme: 'dark', weekStart: 0 });
   });

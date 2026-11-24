@@ -9,9 +9,11 @@ const TABS: { id: Tab; label: string; Icon: typeof CircleCheckBig }[] = [
 ];
 
 export function TabBar({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
+  const index = TABS.findIndex((t) => t.id === tab);
   return (
     <nav className="tabbar" aria-label="Main">
       <div className="tabbar-inner">
+        <span className="tab-indicator" style={{ transform: `translateX(${index * 100}%)` }} aria-hidden="true" />
         {TABS.map(({ id, label, Icon }) => (
           <button
             key={id}
@@ -19,7 +21,7 @@ export function TabBar({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void
             onClick={() => onChange(id)}
             aria-current={tab === id ? 'page' : undefined}
           >
-            <Icon size={22} strokeWidth={2.3} />
+            <Icon size={20} strokeWidth={2.4} />
             {label}
           </button>
         ))}

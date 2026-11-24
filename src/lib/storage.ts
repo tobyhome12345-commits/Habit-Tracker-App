@@ -1,11 +1,18 @@
 import { Preferences } from '@capacitor/preferences';
 import { todayKey } from './dates';
+import { DEFAULT_HABIT_COLOR, LEGACY_COLOR_MAP } from './colors';
 import type { AppState, Habit } from './types';
 
 const KEY = 'habit-tracker-state';
 
 export function defaultState(): AppState {
   return { version: 1, habits: [], completions: {}, settings: { theme: 'system', weekStart: 1 } };
+}
+
+function migrateColor(c: unknown): string {
+  const hex = String(c).toLowerCase();
+  if (!/^#[0-9a-f]{6}$/.test(hex)) return DEFAULT_HABIT_COLOR;
+  return LEGACY_COLOR_MAP[hex] ?? hex;
 }
 
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -18,7 +25,7 @@ export function normalizeState(raw: unknown): AppState {
     id: String(h.id ?? crypto.randomUUID()),
     name: String(h.name ?? 'Habit').slice(0, 60),
     emoji: String(h.emoji ?? '⭐'),
-    color: /^#[0-9a-f]{6}$/i.test(String(h.color)) ? String(h.color) : '#8b5cf6',
+    color: migrateColor(h.color),
     createdAt: /^\d{4}-\d{2}-\d{2}$/.test(String(h.createdAt)) ? String(h.createdAt) : todayKey(),
     reminder: {
       enabled: isObj(h.reminder) ? !!h.reminder.enabled : false,

@@ -1,21 +1,34 @@
-# ✅ Habit Tracker
+# ✅ Habit Tracker, with Pip 🌱
 
 A free, offline habit tracker for Android: no ads, no account, no subscription. Everything stays on your phone.
 
-<img src="docs/screenshots/today.png" width="420" alt="Today screen in light and dark mode"> <img src="docs/screenshots/stats.png" width="420" alt="Monthly stats">
+<img src="docs/screenshots/today.png" width="420" alt="Today screen with Pip, light and dark"> <img src="docs/screenshots/celebrate.png" width="420" alt="Perfect day celebration">
+
+## Meet Pip
+
+**Pip** is a little sunflower-yellow seed with a sprout on his head. He's upbeat, a bit goofy and always on your side. He never guilt-trips you: streaks restart, and that's okay.
+
+- **Pip grows with you.** His sprout follows your best current streak: seedling → two leaves (3 days) → bigger leaves (7) → a bud (14) → 🌸 full bloom (30).
+- **Pip reacts to your day.** He's happy in the morning, cheers you on once you've started, celebrates a perfect day and gets sleepy late at night.
+- You'll find him on Today, in streak-milestone pop-ups, the empty states, Stats ("Pip's take"), reminder notifications, the splash screen and the app icon.
+
+<img src="docs/screenshots/pip.png" width="860" alt="Pip's moods and growth stages">
 
 ## Features
 
-- **Habits your way**: name, emoji (pick one or type any emoji) and colour. Add, edit, delete.
-- **Daily check-off** with a big tap target, a 🔥 **current streak** and 🏆 **best streak**, and confetti when you finish the day.
-- **Fix missed days**: tap any day in the 7-day strip or the calendar.
-- **Calendar + heatmap**: a month view where streaks join into pills, plus a 22-week heatmap. Look at one habit or all of them together.
+- **Habits your way**: name, emoji (pick one or type any emoji) and colour from a 10-tone garden palette.
+- **Daily check-off**: a big tap target with a check that draws itself in, a 🔥 **current streak**, a 🏆 **best streak**, and confetti when you finish the day.
+- **Streak milestones** at 3, 7, 14, 21, 30, 50, 100… days.
+- **Fix missed days** by tapping any day in the 7-day strip or the calendar.
+- **Calendar + heatmap**: a month view where streaks join into pills, plus a 22-week heatmap, for one habit or all of them.
 - **Weekly & monthly stats**: completion %, change vs the last period, check-ins, perfect days, a daily bar chart and a per-habit leaderboard.
-- **Daily reminders** per habit, at any time you choose. You won't get a reminder for a habit you've already done that day.
-- **Works offline**. Data is saved on the device. **Export / Import** a backup file whenever you like.
-- **Light, dark or automatic theme**, built for phones.
+- **Daily reminders** for each habit, in Pip's voice. You won't get one for a habit you've already done that day.
+- **Works offline.** Data is saved on the device, with **Export / Import** backups.
+- **Light, dark or automatic theme**, built for phones. Respects "reduce motion".
 
-<img src="docs/screenshots/calendar.png" width="420" alt="Calendar view"> <img src="docs/screenshots/edit-habit.png" width="420" alt="Edit habit with reminder">
+<img src="docs/screenshots/calendar.png" width="420" alt="Calendar view"> <img src="docs/screenshots/stats.png" width="420" alt="Stats view">
+
+<img src="docs/screenshots/icon-splash-notifications.png" width="860" alt="App icon, splash screens and reminder notifications">
 
 ## 📲 Install on your Android phone
 
@@ -33,18 +46,19 @@ A free, offline habit tracker for Android: no ads, no account, no subscription. 
 ## How it's built
 
 - **React + TypeScript + Vite** web app, wrapped as a native Android app with **Capacitor 8**.
-- Storage: `@capacitor/preferences` (Android SharedPreferences). Reminders: `@capacitor/local-notifications`, scheduled on the device, no server.
+- **Design system:** "Garden notebook". Warm paper + ink by day, a night garden in dark mode. Fredoka + Nunito fonts (bundled, so they work offline). Tokens live in `src/styles/global.css`.
+- **Pip** is drawn in code: `src/mascot/pip.ts` returns his SVG for any mood and growth stage. `src/mascot/mood.ts` decides his mood, messages, growth and milestones (all unit-tested).
+- Storage: `@capacitor/preferences`. Reminders: `@capacitor/local-notifications`, scheduled on the device, no server.
 - **GitHub Actions** (`.github/workflows/build-apk.yml`) runs the tests and builds a signed APK on every push, then publishes it as a GitHub Release.
-- The APK is signed with `android/app/habit-tracker.keystore`, which is committed on purpose so that every build has the same signature and updates install cleanly. It's a personal sideloading key, not a Play Store key.
+- The APK is signed with `android/app/habit-tracker.keystore`. It's committed on purpose, so every build has the same signature and updates install cleanly. It's a personal sideloading key, not a Play Store key.
 
 ### Developing
 
 ```bash
 npm install
 npm run dev        # web preview at http://localhost:5173
-npm test           # unit tests (dates, streaks, stats, storage)
+npm test           # unit tests (dates, streaks, stats, storage, Pip's moods)
 npm run build      # production web build
+npm run assets     # re-render app icon, splash + notification images from Pip's SVG
 npx cap sync android
 ```
-
-Icons and splash screens come from the SVGs in `assets/`. Render them to PNG (`icon-only.png`, `icon-foreground.png`, `icon-background.png`, `splash.png`, `splash-dark.png`), then run `npx capacitor-assets generate --android`.

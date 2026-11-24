@@ -5,5 +5,5 @@ dist/
 .vite/
 coverage/
 *.tsbuildinfo
-# Rendered icon sources (regenerate from the SVGs, see README)
+# Rendered by `npm run assets` from src/mascot/pip.ts
 assets/*.png

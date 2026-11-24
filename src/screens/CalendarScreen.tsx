@@ -5,6 +5,7 @@ import { addDays, addMonths, eachDay, endOfMonth, formatDate, startOfMonth, star
 import { alpha, onColor } from '../lib/colors';
 import { habitStart } from '../lib/stats';
 import { tapHaptic } from '../lib/haptics';
+import { Pip } from '../components/Pip';
 import type { DateKey, Habit } from '../lib/types';
 
 interface Props {
@@ -87,7 +88,7 @@ export function CalendarScreen({ today, selected, onSelect }: Props) {
   // ----- Heatmap -----
   const heatStart = startOfWeek(addDays(today, -(HEAT_WEEKS - 1) * 7), settings.weekStart);
   const heatDays = eachDay(heatStart, addDays(startOfWeek(today, settings.weekStart), 6));
-  const heatColorBase = habit ? habit.color : 'var(--accent)';
+  const heatColorBase = habit ? habit.color : 'var(--leaf)';
   const heatLevel = (d: DateKey) => {
     if (d > today) return -1;
     if (habit) return isDone(habit, d) ? 4 : 0;
@@ -116,9 +117,9 @@ export function CalendarScreen({ today, selected, onSelect }: Props) {
           <h1>Calendar</h1>
         </header>
         <div className="card empty">
-          <div className="empty-art">📅</div>
-          <h2>Nothing to show yet</h2>
-          <p>Add a habit on the Today tab and your progress will light up here.</p>
+          <Pip mood="sleepy" size={130} label="Pip napping" />
+          <h2>Pip’s napping…</h2>
+          <p>Add a habit on the Today tab and your days will light up here.</p>
         </div>
       </main>
     );
@@ -198,8 +199,8 @@ export function CalendarScreen({ today, selected, onSelect }: Props) {
             } else {
               const s = dayShare(d);
               const lvl = future ? 0 : bucket(s.done, s.possible);
-              fill = heatColor(lvl, 'var(--accent)');
-              text = lvl >= 3 ? '#fff' : undefined;
+              fill = heatColor(lvl, 'var(--leaf)');
+              text = lvl >= 3 ? 'var(--ink)' : undefined;
               on = lvl === 4;
               label = `${dateLabel}: ${s.done} of ${s.possible} habits done`;
             }

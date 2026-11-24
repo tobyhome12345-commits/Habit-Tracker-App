@@ -81,7 +81,8 @@
 
 .sheet-head h2 {
   font-size: 22px;
-  font-weight: 800;
+  font-family: var(--font-display);
+  font-weight: 600;
 }
 
 .sheet-body {
@@ -150,7 +151,8 @@
 
 .habit-preview-name {
   font-size: 19px;
-  font-weight: 800;
+  font-family: var(--font-display);
+  font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -363,8 +365,9 @@
 
 .segmented button {
   height: 38px;
-  border-radius: 10px;
-  font-weight: 700;
+  border-radius: 11px;
+  font-family: var(--font-display);
+  font-weight: 600;
   font-size: 14px;
   color: var(--text-2);
   transition: background 0.15s ease, color 0.15s ease;
@@ -374,27 +377,6 @@
   background: var(--seg-active);
   color: var(--text);
   box-shadow: var(--shadow);
-}
-
-/* ---------- Floating add button ---------- */
-.fab {
-  position: fixed;
-  right: max(20px, calc((100vw - 560px) / 2 + 20px));
-  bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 20px);
-  z-index: 15;
-  width: 60px;
-  height: 60px;
-  border-radius: 20px;
-  background: var(--accent);
-  color: var(--accent-text);
-  display: grid;
-  place-items: center;
-  box-shadow: 0 8px 24px rgba(109, 74, 255, 0.45);
-  transition: transform 0.12s ease;
-}
-
-.fab:active {
-  transform: scale(0.92);
 }
 
 /* ---------- Settings ---------- */
@@ -485,9 +467,10 @@
   line-height: 1.5;
 }
 
-.about svg {
-  color: var(--danger);
-  flex-shrink: 0;
+.about {
+  padding: 12px 14px 12px 8px;
+  border-radius: 20px;
+  background: var(--sun-soft);
 }
 
 .about b {
@@ -499,4 +482,80 @@
   font-size: 13px;
   font-weight: 600;
   color: var(--text-2);
+}
+
+/* ---------- Milestone toast ---------- */
+.toast-layer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: calc(var(--safe-top) + 10px);
+  z-index: 60;
+  display: flex;
+  justify-content: center;
+  padding: 0 12px;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px 8px 8px;
+  text-align: left;
+  border-radius: 24px;
+  background: var(--primary);
+  color: var(--on-primary);
+  box-shadow: var(--shadow-lg);
+  animation: toast-in 0.55s var(--spring), toast-out 0.35s ease-in 3.85s forwards;
+}
+
+.toast-pip {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.12);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  --pip-rim: transparent;
+}
+
+.toast-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.toast-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.toast-sub {
+  font-size: 14px;
+  font-weight: 700;
+  opacity: 0.8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-120%) scale(0.92);
+  }
+}
+
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateY(-60%) scale(0.96);
+  }
 }
